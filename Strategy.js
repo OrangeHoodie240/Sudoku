@@ -89,7 +89,6 @@ class Strategy{
             if((rowI === null || colI === null) && onlySpecifiedCell){
                 throw new Error("Error! onlySpecifiedCell=true requires both rowI and colI to be passed ")
             }
-            if(additionalArgs[0] === '4') console.log('here');
     
             const solutions = []; 
     

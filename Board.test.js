@@ -182,13 +182,12 @@ describe('test Board.getNextBlankCellIndicesIndex', ()=>{
     const board = new Board(unsolvedSudoku);
 
     test('returns expected values', ()=>{
-        let nextIndice = Board.getNextBlankCellIndicesIndex(board, 5, 5); 
+        let nextIndex = Board.getNextBlankCellIndicesIndex(board, 5, 5); 
+        expect(board.blankCellsIndices[nextIndex])
+            .toEqual([5,6])
 
-        expect(board.blankCellsIndices[nextIndice])
-            .toEqual([5,7])
-
-        nextIndice = Board.getNextBlankCellIndicesIndex(board);
-        expect(board.blankCellsIndices[nextIndice])
+        nextIndex = Board.getNextBlankCellIndicesIndex(board);
+        expect(board.blankCellsIndices[nextIndex])
             .toEqual([0,2]);
     });
 
