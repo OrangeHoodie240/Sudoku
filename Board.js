@@ -21,8 +21,10 @@ class Cell{
         this._possibleValues.add(val); 
     }
 
-    // takes an array of characters where each number is a string value
-    // returns the cooresponding array of cells 
+    /**  takes an array of characters where each number is a string value
+     * 
+     *   returns the cooresponding array of cells 
+     */ 
     static buildCells(stringArray){
         return stringArray.map(char => {
             return new Cell(char); 
@@ -44,12 +46,26 @@ class Board{
 
     // calcuate is a boolean specifying whether or not the cells should have their possible values calculated
     // default value is false
-    constructor(puzzleString, calculate=false){
+    constructor(puzzleString, {calculate=false, rowI=null, colI=null, value=null}={}){
         this.puzzle = []; 
+        this.blankCellsIndices = [];
         puzzleString = puzzleString.split(/\r?\n/); 
-        for(let row of puzzleString){
+        for(let i = 0; i < 9; i++){
+             let row = puzzleString[i]; 
              row = row.trim(); 
              row = row.split(','); 
+             
+            for(let j = 0; j < 9; j++){
+                if(row[j] === '0'){
+                    if(i === rowI && j === colI){
+                        row[j] = value;
+                    }
+                    else{
+                        this.blankCellsIndices.push([i,j]);
+                    }
+                } 
+            }
+
              this.puzzle.push(Cell.buildCells(row)); 
         }
 
@@ -57,8 +73,12 @@ class Board{
         Board.countMissingCells(this);
     }
 
-    // row number will start at 1
-    // returns a copy of the row
+    /**
+     * row number will start at 1
+     * returns a copy of the row as an array of Cell objects
+     * @param {Board} board 
+     * @param {Number} row 
+     */
     static getRow(board, row){
         return [...board.puzzle[row - 1]]; 
     }
@@ -121,7 +141,9 @@ class Board{
         return results; 
     }
 
-    // takes an array of cells and returns a string representing them comma delmited
+    /** 
+     *  takes an array of cells and returns a string representing them comma delmited
+     */
     static convertCellsToCharacters(cells){
         return cells.map(cell => cell.value).join(',');
     }
@@ -151,9 +173,7 @@ class Board{
         if(!Board.isValidFor(board, row, col, value)){
             return undefined;
         }
-        const clonedBoard = new Board(Board.toString(board), calculate); 
-        clonedBoard.puzzle[row-1][col-1].value = value; 
-        clonedBoard.cellsMissing -= 1; 
+        const clonedBoard = new Board(Board.toString(board), {calculate, rowI:row-1, colI:col-1, value}); 
 
         return clonedBoard; 
     }
@@ -174,8 +194,15 @@ class Board{
         return true; 
     }
 
-    // gets box number from row and collumn
+    /**
+     * Takes row and col numbers (starting at 1) and returns the cooresponding box number
+     * 
+     * @param {Number} row 
+     * @param {Number} col 
+     * @returns {Number}
+     */
     static getBoxNum(row, col){
+
         const boxes = []; 
         if(row < 4){
             boxes.push(1,2,3);
@@ -197,6 +224,40 @@ class Board{
             return boxes[2];
         }
     }
+
+    /**
+     * Returns nested array of row numbers and col numbers (starting at 1)
+     * 
+     * Nested Array: [rowNumbers, colNumbers] 
+     * 
+     * @param {Number} boxNum 
+     */
+    static getRowAndColNums(boxNum){
+        const rows = [];
+        if(boxNum < 4){
+            rows.push(1, 2, 3); 
+        }
+        else if(boxNum < 7){
+            rows.push(4, 5, 6); 
+        }
+        else{
+            rows.push(7, 8, 9);
+        }
+
+        const cols = [];
+        if([1,4,7].includes(boxNum)){
+            cols.push(1,2,3); 
+        }
+        else if([2,5,8].includes(boxNum)){
+            cols.push(4,5,6); 
+        }
+        else{
+            cols.push(7,8,9);
+        }
+
+        return [rows, cols];
+    }
+
 
     static countMissingCells(board){
         board.cellsMissing = 0; 
@@ -237,15 +298,39 @@ class Board{
         },  new Set(['1','2','3','4','5','6','7','8','9']));
     }
 
-    static getFirstBlankCellIndices(board, rowIndice = 0, colIndice=0){
-        for(let i = rowIndice; i < 9; i++){
-            for(let j = colIndice; j < 9; j++){
-                if(board.puzzle[i][j].value === '0'){
-                    return [i,j];
-                }
+    /**
+     * Returns next index of next blank cell indice in property Board.blankCellsIndices
+     * 
+     * If we do not specify a cell, it will return the first blank cells indices index
+     * 
+     * If we do specify a cell, it will return the next blank cell's indices index AFTER that cell
+     * 
+     * 
+     * Returns undefined if there is no such blank cell in that section of the board
+     * 
+     * @param {Board} board 
+     * @param {Number} rowI optional
+     * @param {Number} col optional
+     * 
+     */
+    static getNextBlankCellIndicesIndex(board, rowI=null, colI=null){
+        if(board.blankCellsIndices.length === 0){
+            return undefined;
+        }
+        if(!rowI){
+            return (board.blankCellsIndices.length > 0) ? 0 : undefined;
+        }
+
+        for(let i = 0; i < board.blankCellsIndices.length; i++){
+            const indices = board.blankCellsIndices[i];
+
+            if((indices[0] === rowI && indices[1] > colI) || (indices[0] > rowI)){
+                return i; 
             }
         }
+        return undefined; 
     }
+
 }
 
 module.exports = {Board, Cell}; 

@@ -2,7 +2,7 @@ const {Board} = require('./Board');
 
 function solve(board){
 
-    function _solve(board){
+    function _solve(board, rowI=0, colI=0){
         if(!board){
             return board; 
         }
@@ -10,10 +10,10 @@ function solve(board){
             return board;
         }
 
-        const [rowI, colI] =  Board.getFirstBlankCellIndices(board);
+        [rowI, colI] =  board.blankCellsIndices[0];
         const missingRowValues = Board.getMissingRowValues(board, rowI + 1); 
         for(let value of missingRowValues){
-            const newBoard = _solve(Board.addValue(board, rowI + 1, colI + 1, value)); 
+            const newBoard = _solve(Board.addValue(board, rowI + 1, colI + 1, value), rowI); 
             if(newBoard){
                 return newBoard; 
             }

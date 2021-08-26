@@ -178,9 +178,39 @@ describe('test Board.getMissingRowValues, Board.getMissingColValues & Board.getM
     });
 });
 
-describe('test Board.getFirstBlankCellIndices', ()=>{
-    /*
-        MAKE TESTS
+describe('test Board.getNextBlankCellIndicesIndex', ()=>{
+    const board = new Board(unsolvedSudoku);
 
+    test('returns expected values', ()=>{
+        let nextIndice = Board.getNextBlankCellIndicesIndex(board, 5, 5); 
+
+        expect(board.blankCellsIndices[nextIndice])
+            .toEqual([5,7])
+
+        nextIndice = Board.getNextBlankCellIndicesIndex(board);
+        expect(board.blankCellsIndices[nextIndice])
+            .toEqual([0,2]);
+    });
+
+    test('returns undefined if no such cell', ()=>{
+        expect(Board.getNextBlankCellIndicesIndex(board, 8, 7))
+            .toBe(undefined); 
+        
+        expect(Board.getNextBlankCellIndicesIndex(new Board(solvedSudoku)))
+            .toBe(undefined);
+    });
+});
+
+describe('test Board constructor', ()=>{
+
+    /* 
+        MAKE TESTS 
     */
 });
+
+/*
+    Test: 
+        Board.constructor
+        Board.getRowAndColNums
+
+*/
