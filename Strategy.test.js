@@ -1,6 +1,5 @@
-const { Board } = require('./board');
 const Strategy = require('./Strategy'); 
-
+const { Board } = require('./board');
 
 
 describe('test _soleCandidate', ()=>{
@@ -59,6 +58,7 @@ const boardString3 =
 5,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0
 0,0,0,0,0,4,0,0,0`;
+
 
     test('solves with onlySpecifiedCell set true', ()=>{
         const board = new Board(boardString1);
@@ -149,5 +149,55 @@ describe('test _uniqueCandidate', ()=>{
         const board = new Board(boardString);
         expect(Strategy._uniqueCandidate(board, 7, 0, 2))
             .toEqual(false);
+    });
+});
+
+
+describe('test Strategy._nakedSubset', ()=>{
+    const boardString1 = 
+`0,2,0,1,0,0,0,0,0
+0,0,6,0,0,0,0,0,0
+5,0,3,0,0,0,0,0,0
+0,3,0,0,0,0,0,0,0
+0,1,0,0,2,0,6,0,0
+0,0,0,6,0,0,0,0,0
+8,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0
+9,0,0,0,0,0,0,0,0`
+
+const boardString2 = 
+`6,8,7,0,0,4,5,2,3
+9,5,3,0,0,2,6,1,4
+1,4,2,3,5,6,9,7,8
+3,1,0,0,0,7,2,4,6
+7,6,0,0,0,0,3,0,5
+0,2,0,0,0,0,7,0,1
+0,9,6,0,0,1,0,3,2
+2,3,0,0,0,0,0,5,7
+0,7,0,0,0,0,0,6,9`;
+
+    test('solve for correct answer using col structure', ()=>{
+        const board = new Board(boardString1, {calculate: true});
+        let result = Strategy._nakedSubset(board, 1, 0, 2, 'col');
+        expect(result)
+            .toEqual('1');
+
+        result = Strategy._nakedSubset(board, 5, 0, 2, 'col');
+        expect(result)
+            .toEqual('2');
+    });
+
+    test('solves for correct answer using box structure', ()=>{
+        const board = new Board(boardString2, {calculate: true});
+        let result = Strategy._nakedSubset(board, 3, 3, 2, 'box');
+        expect(result)
+            .toEqual('5');
+    });
+
+    test('returns updated possibilities when solveForPossibilities is set', ()=>{
+        board = new Board(boardString2, {calculate: true});
+        let result = Strategy._nakedSubset(board, 5, 5, 2, 'box', true);
+        expect(result)
+        .toEqual(new Set(['5','3']));
     });
 });

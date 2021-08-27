@@ -207,9 +207,50 @@ describe('test Board constructor', ()=>{
     */
 });
 
+
+describe('test Board.calculateMissingValues', ()=>{
+    const boardString = 
+`0,2,0,1,0,0,0,0,0
+0,0,6,0,0,0,0,0,0
+5,0,3,0,0,0,0,0,0
+0,3,0,0,0,0,0,0,0
+0,1,0,0,2,0,6,0,0
+0,0,0,6,0,0,0,0,0
+8,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0
+9,0,0,0,0,0,0,0,0`
+
+    test('solves for the correct sets of missing values', ()=>{
+        const board = new Board(boardString, {calculate: true});
+
+        const expecting = [
+                            new Set(['4','7']),
+                            new Set(['1','4','7']),
+                            new Set(['2','4','7','6']), 
+                            new Set(['4','7']), 
+                            new Set(['2','4','7']), 
+                            new Set(['1','2','3','4','6','7'])
+                        ];
+
+        const firstCol = Board.getCol(board, 1); 
+        const blankCellValues = [];
+        for(let i = 0; i < 9; i++){
+            const cell = firstCol[i];
+            if(cell.value !== '0') continue;
+            blankCellValues.push(cell.possibleValues); 
+        }
+  
+        for(let i = 0; i < blankCellValues.length; i++){
+            expect(blankCellValues[i]).toEqual(expecting[i]);
+        }
+        
+    });
+});
+
 /*
     Test: 
         Board.constructor
         Board.getRowAndColNums
-
+        Board.findPossibleCellValues
+        Board.removeValue
 */
