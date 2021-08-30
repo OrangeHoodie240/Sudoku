@@ -1,5 +1,5 @@
-const { Board } = require('./board');
-const solve = require('./solve');
+const { Board } = require('../board');
+const solve = require('../solve');
 
 const unsolvedSudoku = 
 `5,3,0,0,7,0,0,0,0

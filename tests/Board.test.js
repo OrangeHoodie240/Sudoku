@@ -1,4 +1,4 @@
-const {Board, Cell} = require('./Board');
+const {Board, Cell} = require('../Board');
 
 
 // preserve this whitespacing for testing board to string format conversion.
@@ -253,4 +253,5 @@ describe('test Board.calculateMissingValues', ()=>{
         Board.getRowAndColNums
         Board.findPossibleCellValues
         Board.removeValue
+        Board.getBoxRowsAndCols
 */

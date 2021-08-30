@@ -1,9 +1,10 @@
 const Strategy = require('./Strategy');
 
 class Cell {
-    constructor(value = 0) {
+    constructor(value = 0, rowI, colI) {
         this._value = value;
         this._possibleValues = new Set();
+        this.indices = [rowI, colI];
     }
 
     get value() {
@@ -74,7 +75,10 @@ class Board {
                 }
             }
 
-            this.puzzle.push(Cell.buildCells(row));
+            // convert array of characters to array of cells
+            row = row.map((char, colI) => new Cell(char, i, colI));
+            this.puzzle.push(row);
+
 
         }
         // adds property missingCells to board
@@ -172,10 +176,22 @@ class Board {
         return boardString;
     }
 
-    // returns A CLONED board with the value added to specified cell
-    // returns undefined if new board is not valid
-    // row and col start at 1
-    // throw error cell is not blank
+
+    /**
+     * returns A CLONED board with the value added to specified cell
+     * 
+     * row and col start at 1
+     * 
+     * returns undefined if new board is not valid
+     * 
+     * throw error cell is not blank
+     * @param {Board} board 
+     * @param {Number} row starts at 1 
+     * @param {Number} col Starts at 1
+     * @param {String} value 
+     * @param {Boolean} calculate 
+     * @returns {Board}
+     */
     static addValue(board, row, col, value, calculate = false) {
         const cell = board.puzzle[row - 1][col - 1];
         if (cell.value !== '0') {
@@ -442,6 +458,39 @@ class Board {
                 board.puzzle[i][j]._possibleValues = possibleValues;
             }
         }
+    }
+
+    /**
+     * Returns an array of two nested arrays representing the board as a matrix. 
+     * The first nested array is an array of the rows of the box
+     * The second is an array of the columns
+     * returns [rows, cols] where: rows = [row1, row2, row3] and cols = [col1, col2, co3]
+     * Each inner most array is of Cell type
+     * 
+     * @param {Board} board 
+     * @param {Number} boxNum 
+     * @returns {Array<Array<Array<Cell>>,Array<Array<Cell>>>}
+     */
+    static getBoxRowsAndCols(board, boxNum){
+        const box = Board.getBox(board, boxNum); 
+        const rows = [];
+        for(let i = 0; i < 9; i+=3){
+            let row = [];
+            for(let j = 0; j < 3; j++){
+                row.push(box[i + j]);
+            }
+            rows.push(row);
+        }
+
+        const cols = []; 
+        for(let i = 0; i < 3; i++){
+            let col = [];
+            for(let j = 0; j < 3; j++){
+                col.push(rows[j][i])
+            }
+            cols.push(col);
+        }
+        return [rows, cols];
     }
 }
 

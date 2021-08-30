@@ -1,5 +1,12 @@
 const {Board} = require('./Board');
 
+ /**
+  * 
+  * @param {Board} board 
+  * @param {Number} time from Date.now() 
+  * @param {Number} limit ms allowed to transpire before aborting 
+  * @returns {Board}
+  */
 function solve(board, time=null, limit=null){
 
     function _solve(board, rowI=0, colI=0){

@@ -1,14 +1,11 @@
 const { Board } = require('./Board');
 
+// list of strategies that require possible values to be marked for applyStrategy to reference
+const requiresCalculate = new Set(['naked-subset', 'hidden-subset']);
 
-const requiresCalculate = new Set(['naked-subset']);
+const SetMethods = require('./SetMethods');
 
 class Strategy {
-
-    static getBoard(){
-        console.log(Board);
-        return Board; 
-    }
 
     /**
      * takes strategy name and returns appropriate strategy function
@@ -122,8 +119,7 @@ class Strategy {
         // index for current cell within the blankCellsIndices property belonging to the Board object
         // presumes the cell coordinates passed are for a blank cell
         let initialBlankCellsIndicesIndex = Board.getNextBlankCellIndicesIndex(board, rowI, colI);
-        (initialBlankCellsIndicesIndex === 0) ? 0 : initialBlankCellsIndicesIndex - 1; 
-
+        initialBlankCellsIndicesIndex = (initialBlankCellsIndicesIndex === 0) ? 0 : initialBlankCellsIndicesIndex - 1;
 
         // save initial board's blankCellsIndices because we will be changing the board variable
         const blankCellsIndices = board.blankCellsIndices;
@@ -249,61 +245,257 @@ class Strategy {
      * @param {Number} colI starts at 0 
      * @param  {Array<Number, String, Boolean>} param3 
      */
-    static _nakedSubset(board, rowI, colI, ...[setSize = 2, structureType = 'row', solveForPossibilities=false]) {
+    static _nakedSubset(board, rowI, colI, ...[setSize = 2, structureType = 'row', solveForPossibilities = false]) {
         const targetCell = board.puzzle[rowI][colI];
         if (!solveForPossibilities && targetCell.possibleValues.size !== setSize + 1) {
             return false;
         }
-        else if(solveForPossibilities && targetCell.possibleValues.size <= setSize){
+        else if (solveForPossibilities && targetCell.possibleValues.size <= setSize) {
             return false;
         }
 
-        let getStructure = null;
-        let structureNum = null;
+        let getStructures = null;
+        let structureNums = null;
         if (structureType === 'row') {
-            getStructure = Board.getRow;
-            structureNum = rowI + 1;
+            getStructures = [Board.getRow];
+            structureNums = [rowI + 1];
         }
         else if (structureType === 'col') {
-            getStructure = Board.getCol;
-            structureNum = colI + 1;
+            getStructures = [Board.getCol];
+            structureNums = [colI + 1];
         }
-        else {
-            getStructure = Board.getBox;
-            structureNum = Board.getBoxNum(rowI + 1, colI + 1);
+        else if (structureType === 'box') {
+            getStructures = [Board.getBox];
+            structureNums = [Board.getBoxNum(rowI + 1, colI + 1)];
         }
-
-        // find all sets of possibleValues for each cell in the structure that is of the correct set size
-        let possibleMatchingSets = {};
-        const structure = getStructure(board, structureNum); 
-        for(let cell of structure){
-            if(cell.possibleValues.size === setSize){
-                const set = cell.possibleValues;
-                const setString = set + '';
-                const occurences = (possibleMatchingSets[setString]) ? possibleMatchingSets[setString].occurences + 1 : 1; 
-                possibleMatchingSets[setString] = {set, occurences};  
-            }
+        else if (structureType === 'all') {
+            getStructures = [
+                Board.getRow,
+                Board.getCol,
+                Board.getBox
+            ];
+            structureNums = [rowI + 1, colI + 1, Board.getBoxNum(rowI + 1, colI + 1)];
         }
 
-        // remove any set from the possible matches that does not share its number of occurences with the 
-        // set size. 
-        possibleMatchingSets = Object.values(possibleMatchingSets).filter(match => match.occurences === setSize); 
+        // this will only be returned if solveForPossibilities was set 
+        let possibleSolutions = [];
 
-        for(let match of possibleMatchingSets){
-            let targetSet = new Set(targetCell.possibleValues); 
-            for(let element of match.set){
-                targetSet.delete(element);
+        for (let i = 0; i < getStructures.length; i++) {
+
+            // find all sets of possibleValues for each cell in the structure that is of the correct set size
+            let possibleMatchingSets = {};
+            const structure = getStructures[i](board, structureNums[i]);
+            for (let cell of structure) {
+                if (cell.possibleValues.size === setSize) {
+                    const set = cell.possibleValues;
+                    const setString = set + '';
+                    const occurences = (possibleMatchingSets[setString]) ? possibleMatchingSets[setString].occurences + 1 : 1;
+                    possibleMatchingSets[setString] = { set, occurences };
+                }
             }
-            if(!solveForPossibilities && targetSet.size === 1){
-                targetSet = Array.from(targetSet.values());
-                return targetSet[0];
+
+            // remove any set from the possible matches that does not share its number of occurences with the 
+            // set size. 
+            possibleMatchingSets = Object.values(possibleMatchingSets).filter(match => match.occurences === setSize);
+
+            for (let match of possibleMatchingSets) {
+                let targetSet = new Set(targetCell.possibleValues);
+                for (let element of match.set) {
+                    targetSet.delete(element);
+                }
+                if (!solveForPossibilities && targetSet.size === 1) {
+                    targetSet = Array.from(targetSet.values());
+                    return targetSet[0];
+                }
+                else if (solveForPossibilities && targetSet.size < targetCell.possibleValues.size) {
+                    possibleSolutions.push(targetSet);
+                }
             }
-            else if(solveForPossibilities && targetSet.size < targetCell.possibleValues.size){
-                return targetSet;
+
+        }
+        if (possibleSolutions.length > 0) {
+            let returnedSet = possibleSolutions[0];
+            for (let i = 1; i < getStructures.length; i++) {
+                returnedSet = SetMethods.intersection(returnedSet, possibleSolutions[i]);
             }
+            return returnedSet;
         }
 
         return false;
+    }
+
+
+
+
+
+
+
+
+
+
+    // *******************************INCOMPLETE******************
+    /* 
+        Things to fix
+            1. We need to allow to combine one or more of the sets that are naked.  
+                - 3,7,8 and 7,8 will be hidden sets for 78
+            2. We need to make sure there is not other 
+    */
+
+
+
+    /**
+     * Solves using hidden subset
+     * setSize will stand for hidden subset within the larger set.
+     * @param {Board} board 
+     * @param {Number} rowI 
+     * @param {Number} colI 
+     * @param  {Array<Number, String, Boolean>} param3 
+     */
+    static _hiddenSubset(board, rowI, colI, ...[setSize = 2, structureType = 'row', solveForPossibilities = false]) {
+        const targetCell = board.puzzle[rowI][colI];
+
+        let getStructures = null;
+        let structureNums = null;
+        if (structureType === 'row') {
+            getStructures = [Board.getRow];
+            structureNums = [rowI + 1];
+        }
+        else if (structureType === 'col') {
+            getStructures = [Board.getCol];
+            structureNums = [colI + 1];
+        }
+        else if (structureType === 'box') {
+            getStructures = [Board.getBox];
+            structureNums = [Board.getBoxNum(rowI + 1, colI + 1)];
+        }
+        else if (structureType === 'all') {
+            getStructures = [
+                Board.getRow,
+                Board.getCol,
+                Board.getBox
+            ];
+            structureNums = [rowI + 1, colI + 1, Board.getBoxNum(rowI + 1, colI + 1)];
+        }
+
+        const possibleSolutions = [];
+        for (let i = 0; i < getStructures.length; i++) {
+            let targetSet = targetCell.possibleValues;
+            // get all possible matching sets
+            let possibleSets = [];
+
+            const structure = getStructures[i](board, structureNums[i]);
+            for (let cell of structure) {
+                if (cell === targetCell) continue;
+                const set = cell.possibleValues;
+                if (set.size >= setSize) {
+                    for (let el of targetSet) {
+                        if (set.has(el)) {
+                            possibleSets.push(set);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // find all sets of possibleValues for each cell in the structure that is of the correct set size
+            let possibleMatchingSets = {};
+            for (let subSet of SetMethods.powerSet(targetSet)) {
+                if (subSet.size < setSize || subSet.size === targetSet.size) continue;
+                for (let set of possibleSets) {
+                    if (SetMethods.isProperSubset(subSet, set)) {
+                        const setString = [...subSet] + '';
+                        const occurences = (possibleMatchingSets[setString]) ? possibleMatchingSets[setString].occurences + 1 : 1;
+                        possibleMatchingSets[setString] = { set: subSet, occurences };
+                    }
+
+                }
+            }
+            possibleMatchingSets = Object.values(possibleMatchingSets).filter(match => match.occurences === setSize);
+
+            for (let match of possibleMatchingSets) {
+                let targetSet = new Set(targetCell.possibleValues);
+                for (let element of match.set) {
+                    targetSet.delete(element);
+                }
+                if (!solveForPossibilities && targetSet.size === 1) {
+                    targetSet = Array.from(targetSet.values());
+                    return targetSet[0];
+                }
+                else if (solveForPossibilities && targetSet.size < targetCell.possibleValues.size) {
+                    possibleSolutions.push(targetSet);
+                }
+            }
+        }
+        if (possibleSolutions.length > 0) {
+            let returnedSet = possibleSolutions[0];
+            for (let i = 1; i < getStructures.length; i++) {
+                returnedSet = SetMethods.intersection(returnedSet, possibleSolutions[i]);
+            }
+            return returnedSet;
+        }
+
+        return false;
+    }
+
+    static _pointingPairsAndTripples(board, solve = false) {
+        board = new Board(Board.toString(board), { calculate: true });
+
+        const structures = [{ 'get': Board.getRow }, { 'get': Board.getCol }];
+
+        for (let i = 1; i < 10; i++) {
+            const [boxRows, boxCols] = Board.getBoxRowsAndCols(board, i);
+            structures[0].rowsOrCols = boxRows;
+            structures[1].rowsOrCols = boxCols;
+            const box = Board.getBox(board, i);
+            const missingBoxValues = Board.getMissingBoxValues(board, i);
+            for (let missingValue of missingBoxValues) {
+
+                // possible cells is the number of cells in the entire box that have the missingValue in their set of 
+                // possible values
+                let possibleCells = 0;
+                for (let cell of box) {
+                    if (cell.possibleValues.has(missingValue)) possibleCells++;
+                }
+
+                for (let i = 0; i < 2; i++) {
+                    for (let rowOrCol of structures[i].rowsOrCols) {
+                        let cellsMissingTheValue = 0;
+
+                        for (let cell of rowOrCol) {
+                            if (cell.possibleValues.has(missingValue)) {
+                                cellsMissingTheValue++;
+                            }
+                        }
+                        if (cellsMissingTheValue === possibleCells) {
+                            const relatedRowOrCol = structures[i].get(board, rowOrCol[0].indices[i] + 1);
+                            for (let relatedCell of relatedRowOrCol) {
+                                if (rowOrCol.includes(relatedCell)) continue;
+                                if (relatedCell.value === '0') {
+                                    let possibleValues = Array.from(relatedCell.possibleValues); 
+                                    relatedCell.possibleValues.delete(missingValue);
+                                    if(relatedCell.possibleValues.size === 0) console.log(possibleValues);
+                                    if (solve) {
+                                        if (relatedCell.possibleValues.size === 1) {
+                                            let [rowI, colI] = relatedCell.indices;
+                                            let solution = relatedCell.possibleValues.values().next();
+                                            solution = solution.value;
+                                            board = Board.addValue(board, rowI + 1, colI + 1, solution, true)
+                                            solution = [rowI, colI, solution];
+                                            return { board, solution };
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        }
+
+
+        return { board };
     }
 
 }

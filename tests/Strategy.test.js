@@ -1,5 +1,5 @@
-const Strategy = require('./Strategy'); 
-const { Board } = require('./board');
+const Strategy = require('../Strategy');
+const { Board } = require('../board');
 
 
 describe('test _soleCandidate', ()=>{
@@ -105,7 +105,6 @@ const boardString3 =
         const results = Strategy.applyStrategy(board, 'sole-candidate', {rowI: 1, colI: 1, trySolveAll: true}); 
         expect(results.solutions)
             .toEqual([[1, 1, '8'], [3, 3,'1'], [8, 7, '5'], [0,0,'4']])
-
         board.puzzle[0][0].value = '4';
         board.puzzle[1][1].value = '8';
         board.puzzle[3][3].value = '1'; 
@@ -200,4 +199,72 @@ const boardString2 =
         expect(result)
         .toEqual(new Set(['5','3']));
     });
+});
+
+describe('test Strategy._pointingPairsAndTripples', ()=>{
+    const boardstring1 = 
+`0,1,7,9,0,3,6,0,0
+0,0,0,0,8,0,0,0,0
+9,0,0,0,0,0,5,0,7
+0,7,2,0,1,0,4,3,0
+0,0,0,4,0,2,0,7,0
+0,6,4,3,7,0,2,5,0
+7,0,1,0,0,0,0,6,5
+0,0,0,0,3,0,0,0,0
+0,0,5,6,0,1,7,2,0`; 
+
+    test('Reduces possibilities', ()=>{
+        let board = new Board(boardstring1, {calculate: true});
+
+        let possibleValues = [];
+        possibleValues.push(Array.from(board.puzzle[1][0].possibleValues));
+        possibleValues.push(Array.from(board.puzzle[1][1].possibleValues));
+        possibleValues.push(Array.from(board.puzzle[1][2].possibleValues));
+
+        expect(possibleValues)
+            .toEqual(
+                [
+                    ['2','3','4','5','6'],
+                    ['2','3','4','5'],
+                    ['3','6']
+                ]
+            )
+
+        board = Strategy._pointingPairsAndTripples(board).board;
+    
+        possibleValues.length = 0; 
+        possibleValues.push(Array.from(board.puzzle[1][0].possibleValues));
+        possibleValues.push(Array.from(board.puzzle[1][1].possibleValues));
+        possibleValues.push(Array.from(board.puzzle[1][2].possibleValues));
+                
+        expect(possibleValues)
+            .toEqual(
+                [
+                    ['2','4','5','6'], 
+                    ['2','4','5'],
+                    ['6']
+                ]
+            );
+        
+    }); 
+
+    test('solves', ()=>{
+        let board = new Board(boardstring1, {calculate: true});
+
+        let cellsMissingBefore = board.cellsMissing;
+        let results = Strategy._pointingPairsAndTripples(board, true)
+        expect(results.board.cellsMissing)
+            .toEqual(cellsMissingBefore - 1); 
+
+
+        expect(results.solution)
+            .toEqual([1,2,'6']);
+    });
+
+    
+
+});  
+
+describe('test hidden-subset', ()=>{
+
 });
