@@ -492,6 +492,87 @@ class Board {
         }
         return [rows, cols];
     }
+
+
+    /**
+     * Clones the board
+     * 
+     * Each cell of clone has clonned possibleValue sets
+     * 
+     * calculation is not performed but the possibleValues are copied directly
+     * 
+     * isCalculated set true
+     * @param {Board} board 
+     * @returns {Board}
+     */
+    static copy(board){
+        let newBoard = new Board(Board.toString(board));
+        if(board.isCalculated){
+            for(let i = 0; i < 9; i++){
+                for(let j = 0; j< 9; j++){
+                    newBoard.puzzle[i][j]._possibleValues = new Set(Array.from(board.puzzle[i][j].possibleValues));
+                }
+            }
+            newBoard.isCalculated = true;
+        }
+        return newBoard; 
+    }
+
+    /**
+     * Returns an array of the boxes overlapping the row specified by the number. 
+     * 
+     * Each box array will have its box number as a boxNum proeprty
+     * @param {Board} board 
+     * @param {Number} rowNum starts at one
+     * @returns {Array<Array<Cell>>}
+     */
+    static getBoxRow(board, rowNum){
+        let boxes;
+        if(rowNum < 4){
+            boxes = [Board.getBox(board, 1), Board.getBox(board, 2), Board.getBox(board, 3)]; 
+        }
+        else if(rowNum < 7){
+            boxes = [Board.getBox(board, 4), Board.getBox(board, 5), Board.getBox(board, 6)]; 
+
+        }
+        else{
+            boxes = [Board.getBox(board, 7), Board.getBox(board, 8), Board.getBox(board, 9)]; 
+        }
+        for(let box of boxes){
+            let indices = box[0].indices; 
+            box.boxNum = Board.getBoxNum(indices[0] + 1,indices[1] + 1);
+        }
+        return boxes;
+    }
+
+    /**
+     * Returns an array of the boxes overlapping the col specified by the number. 
+     * 
+     * Each box array will have its box number on the boxNum property
+     * @param {Board} board 
+     * @param {Number} colNum starts at one
+     * @returns {Array<Array<Cell>>}
+     */
+     static getBoxCol(board, colNum){
+        let boxes;
+        if(colNum < 4){
+            boxes = [Board.getBox(board, 1), Board.getBox(board, 4), Board.getBox(board, 7)]; 
+        }
+        else if(colNum < 7){
+            boxes = [Board.getBox(board, 2), Board.getBox(board, 5), Board.getBox(board, 8)]; 
+
+        }
+        else{
+            boxes = [Board.getBox(board, 3), Board.getBox(board, 6), Board.getBox(board, 9)]; 
+        }
+
+        for(let box of boxes){
+            let indices = box[0].indices; 
+            box.boxNum = Board.getBoxNum(indices[0] + 1, indices[1] + 1);
+        }
+
+        return boxes;
+    }
 }
 
 module.exports = { Board, Cell };

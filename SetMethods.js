@@ -101,21 +101,41 @@ class SetMethods {
         }
     }
 
-    static powerSet(A) {
-        let powerSet = new Set();
-        for (let el1 of A) {
-            let runningArr = [el1];
-            powerSet.add(new Set().add(el1));
-            for (let el2 of A) {
-                if (el2 === el1) continue;
-                runningArr.push(el2);
-                SetMethods.addSet(powerSet, new Set(runningArr));
-            }
+    static subSetsUpTwo(A) {
+        A = new Set(Array.from(A));
+        let set = new Set();
+        for(let el1 of A){
+            set.add(new Set([el1]));
+            A.delete(el1); 
+            for(let el2 of A){
+                set.add(new Set([el1, el2]));
+            } 
         }
-        powerSet.add(new Set());
-        return powerSet;
+        return set;
+    }
+
+
+    static subSetsUpThree(A) {
+        A = new Set(Array.from(A));
+        let set = new Set();
+
+        for(let el1 of A){
+            set.add(new Set([el1]));
+            A.delete(el1); 
+            let B = new Set(Array.from(A)); 
+            for(let el2 of B){
+                set.add(new Set([el1, el2]));
+                B.delete(el2); 
+                let C = new Set(Array.from(B)); 
+                for(let el3 of C){
+                    set.add(new Set([el1, el2, el3]));
+                }
+            } 
+        }
+        return set;
     }
 
 }
+
 
 module.exports = SetMethods;

@@ -254,4 +254,7 @@ describe('test Board.calculateMissingValues', ()=>{
         Board.findPossibleCellValues
         Board.removeValue
         Board.getBoxRowsAndCols
+        Board.copy
+        Board.getBoxRow
+        Board.getBoxCol
 */
