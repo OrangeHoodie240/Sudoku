@@ -1,7 +1,8 @@
 const { Board } = require('./Board');
 
+
 // list of strategies that require possible values to be marked for applyStrategy to reference
-const requiresCalculate = new Set(['naked-subset', 'hidden-subset, pointing-pairs-and-tripples', 'box-line-reduction']);
+const requiresCalculate = new Set(['naked-subset', 'hidden-subset', 'pointing-pairs-and-tripples', 'box-line-reduction']);
 
 const SetMethods = require('./SetMethods');
 
@@ -19,6 +20,8 @@ class Strategy {
                 return Strategy._uniqueCandidate;
             case 'naked-subset':
                 return Strategy._nakedSubset;
+            case 'hidden-subset':
+                return Strategy._hiddenSubset;
         }
     }
 
@@ -78,9 +81,15 @@ class Strategy {
     */
 
     static applyStrategy(board, strategy, { rowI = null, colI = null, trySolveAll = false, onlySpecifiedCell = false, additionalArgs = [] }) {
+        const og = Board.copy(board);
+
+        //delete 
+        let strat = strategy;
+
         if (requiresCalculate.has(strategy) && !board.isCalcuated) {
             Board.calculateMissingValues(board);
         }
+
 
         strategy = Strategy._getStrategy(strategy);
         // if additionalArgs, curry stategy into a function that adds it onto the end.
@@ -101,7 +110,7 @@ class Strategy {
 
         const solutions = [];
 
-        if (!rowI) {
+        if (rowI === null) {
             [rowI, colI] = board.blankCellsIndices[0];
         }
 
@@ -124,6 +133,8 @@ class Strategy {
         // save initial board's blankCellsIndices because we will be changing the board variable
         const blankCellsIndices = board.blankCellsIndices;
 
+
+
         for (let i = initialBlankCellsIndicesIndex; i < blankCellsIndices.length; i++) {
             let indices = blankCellsIndices[i];
             let solution = strategy(board, indices[0], indices[1]);
@@ -145,6 +156,9 @@ class Strategy {
         }
 
         if (solutions.length === 0) return false;
+        if(!board){
+            throw new Error(strat);
+        }
         return { board, solutions };
     }
 
@@ -288,16 +302,14 @@ class Strategy {
             for (let cell of structure) {
                 if (cell.possibleValues.size === setSize) {
                     const set = cell.possibleValues;
-                    const setString = set + '';
+                    const setString = Array.from(set).sort() + '';
                     const occurences = (possibleMatchingSets[setString]) ? possibleMatchingSets[setString].occurences + 1 : 1;
                     possibleMatchingSets[setString] = { set, occurences };
                 }
             }
-
             // remove any set from the possible matches that does not share its number of occurences with the 
             // set size. 
             possibleMatchingSets = Object.values(possibleMatchingSets).filter(match => match.occurences === setSize);
-
             for (let match of possibleMatchingSets) {
                 let targetSet = new Set(targetCell.possibleValues);
                 for (let element of match.set) {
@@ -339,7 +351,14 @@ class Strategy {
      * @returns {{board: Board}}
      */
     static _hiddenSubset(board, rowI, colI, ...[setSize = 2, structureType = 'row', solveForPossibilities = false]) {
+        const originalCellCount = board.cellsMissing;
         board = Board.copy(board);
+        
+        // temporary fix for bug        
+        const og = Board.copy(board);
+        
+        
+
 
         // depending on the structureType, row, col, box or all prepare the correct function calls
         let getStructures = null;
@@ -429,8 +448,8 @@ class Strategy {
                     }
                 }
             }
-            possibleMatchingSets = Object.values(possibleMatchingSets).filter(match => match.cells.length === match.set.size);
 
+            possibleMatchingSets = Object.values(possibleMatchingSets).filter(match => match.cells.length === match.set.size);
 
             for (let match of possibleMatchingSets) {
                 for (let cell of match.cells) {
@@ -444,6 +463,7 @@ class Strategy {
                         cell.possibleValues.delete(el);
                     }
                 }
+
                 if (!solveForPossibilities) {
                     let updateResults = Strategy._updatePossibleValueRemoval(board);
                     if (updateResults.board.cellsMissing < board.cellsMissing) {
@@ -451,8 +471,12 @@ class Strategy {
                     }
                 }
             }
+
         }
 
+        if (!solveForPossibilities && board.cellsMissing === originalCellCount) {
+            return false;
+        }
         return { board };
     }
 
@@ -546,8 +570,9 @@ class Strategy {
      * @returns {{board: Board, solution: [Number, Number, String]}}
      */
     static _BoxLineReduction(board, solve = true) {
+        const originalCellCount = board.cellsMissing; 
+        
         board = Board.copy(board);
-
         const structures = [{ 'get': Board.getRow, 'getBoxes': Board.getBoxRow }, {
             'get': Board.getCol,
             'getBoxes': Board.getBoxCol
@@ -615,11 +640,15 @@ class Strategy {
                     }
 
                     if (canSolve && solve) {
-                        return Strategy._updatePossibleValueRemoval(board);
+                        let results = Strategy._updatePossibleValueRemoval(board);
+                        return results;
                     }
 
                 }
             }
+        }
+        if(solve && originalCellCount ===  board.cellsMissing){
+            return false;
         }
         return { board };
 
@@ -635,6 +664,7 @@ class Strategy {
      * @returns {{board: Board}}
      */
     static _updatePossibleValueRemoval(board, updateAll = false) {
+
         board = Board.copy(board);
         let getStructures = [
             Board.getRow,
@@ -677,6 +707,7 @@ class Strategy {
                     let cell = entry.cells[0];
                     let [rowI, colI] = cell.indices;
                     let value = entry.missingValue;
+
                     if (!updateAll) {
                         let solution = [rowI, colI, value];
                         return { board: Board.addValue(board, rowI + 1, colI + 1, value, true), solution };
@@ -687,8 +718,8 @@ class Strategy {
         return { board };
     }
 
-    static _lastRemainingCell(board){
-        board = Board.copy(board); 
+    static _lastRemainingCell(board) {
+        board = Board.copy(board);
 
         const structures = [
             {
@@ -699,32 +730,67 @@ class Strategy {
             {
                 'getStructure': Board.getCol,
                 'getMissingValues': Board.getMissingColValues
-            }, 
+            },
             {
-                'getStructure': Board.getBox, 
+                'getStructure': Board.getBox,
                 'getMissingValues': Board.getMissingBoxValues
             }
         ];
 
-        for(let i = 0; i < 3; i++){
-            for(let j = 1; j < 10; j++){
+        for (let i = 0; i < 3; i++) {
+            for (let j = 1; j < 10; j++) {
                 const missingValues = structures[i].getMissingValues(board, j);
 
-                if(missingValues.size === 1){
-                    const structure = structures[i].getStructure(board, j); 
-                    for(let cell of structure){
-                        if(cell.value === '0'){
-                            const missingValue = Array.from(missingValues)[0];
-                            let indices = cell.indices; 
-                            board = Board.addValue(board, indices[0] + 1, indices[1] + 1, missingValue);
-                            console.log(Board.toString(board));
-                            return {board};
+                if (missingValues.size === 1) {
+                    const structure = structures[i].getStructure(board, j);
+                    for (let cell of structure) {
+                        if (cell.value === '0') {
+                            const value = Array.from(missingValues)[0];
+                            let indices = cell.indices;
+                            board = Board.addValue(board, indices[0] + 1, indices[1] + 1, value);
+                            return { board, solution: [indices[0], indices[1], value]};
                         }
                     }
                 }
             }
         }
-        return {board};
+        return false;
+    }
+
+    /**
+     * Run a strategy until it can't solve any pieces on the current board.
+     * 
+     * Returns object with board property or false if no change
+     * 
+     * Takes a callback which calls performs the strategy. 
+     * 
+     * Callback should: 
+     * 
+     *          -  Perform strategy on board
+     *          -  If succesfull return object WITH board property 
+     *          - If unsuccesful return false
+     * @param {Board} board 
+     * @param {Function} callBack 
+     * @returns {{board}}
+     */
+    static runStrategyUntilNoChange(board, callBack) {
+        let originalCellCount = board.cellsMissing;
+        let cellsMissing = 82;
+        let solution = null; 
+        while (cellsMissing > board.cellsMissing) {
+            cellsMissing = board.cellsMissing;
+            let results = callBack(board);
+            if (results) {
+                board = results.board;
+                solution = results.solution; 
+            }
+        }
+        if (originalCellCount === board.cellsMissing) {
+            return false;
+        }
+        else {
+            return { board , solution};
+        }
     }
 }
 

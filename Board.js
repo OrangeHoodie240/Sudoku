@@ -164,18 +164,34 @@ class Board {
         return cells.map(cell => cell.value).join(',');
     }
 
-    static toString(board) {
-        let boardString = '';
-        for (let row of board.puzzle) {
+    static toString(board, fancy=false) {
+        let boardString = (fancy) ? ('\t1 2 3 4 5 6 7 8 9\n') : '';
+        for (let i = 1; i < 10; i++) {
             if (boardString) {
                 boardString += '\n';
             }
+            let row = board.puzzle[i - 1]; 
             row = Board.convertCellsToCharacters(row);
+            if(fancy){
+                row = row.split(',');
+                row = row.join(' ');
+                boardString += `${i}\t`;
+            }
             boardString += row;
+            if(fancy){
+                boardString += `\t${i}`;
+            }
+        }
+        if(fancy){
+            boardString += '\n\n\t1 2 3 4 5 6 7 8 9';
         }
         return boardString;
     }
 
+
+   static toFancyString(board){
+       let boardString = Board.toString(board); 
+   }
 
     /**
      * returns A CLONED board with the value added to specified cell
@@ -572,6 +588,18 @@ class Board {
         }
 
         return boxes;
+    }
+
+    static areCompatible(board1, board2){
+        for(let i = 0; i < 9; i++){
+            for(let j = 0; j < 9; j++){
+                let cellVal1 = board1.puzzle[i][j].value; 
+                let cellVal2 = board2.puzzle[i][j].value; 
+                if(cellVal1 === '0' || cellVal2 === '0') continue; 
+                if(cellVal1 !== cellVal2) return false;
+            }
+        }
+        return true; 
     }
 }
 

@@ -278,6 +278,16 @@ describe('test hidden-subset', () => {
     0,0,7,0,0,0,0,0,0
     0,0,0,0,0,0,0,0,0`;
 
+    const boardString2 =
+    `1,2,7,9,3,4,5,6,8
+    3,4,6,2,5,8,1,7,9
+    5,8,9,6,1,7,2,0,0
+    0,0,0,3,7,5,4,8,0
+    7,5,4,8,2,0,9,0,0
+    0,0,0,4,9,0,7,0,5
+    0,1,5,7,6,3,8,9,0
+    0,0,0,1,0,2,6,5,7
+    6,7,0,5,0,9,3,0,1`;
 
     test('solves for value correctly', () => {
         let board = new Board(boardString1, { calculate: true });
@@ -300,7 +310,6 @@ describe('test hidden-subset', () => {
 
         expect(solution)
             .toEqual([7, 0, '5']);
-
     });
 
 });
