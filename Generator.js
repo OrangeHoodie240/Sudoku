@@ -211,12 +211,12 @@ class Generator {
 
 }
 
-// const board = Generator.generatePuzzle('level-five');
+// const board = Generator.generatePuzzle('level-test');
 // console.log(Board.toString(board));
 
 
 
-// console.log(Generator._applyDifficultySetting(board, difficultySettings['level-five'], Date.now()));
+// console.log(Generator._applyDifficultySetting(board, difficultySettings['level-test'], Date.now()));
 
 
 module.exports = Generator;

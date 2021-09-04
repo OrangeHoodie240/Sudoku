@@ -36,8 +36,23 @@ class Analyzer {
         let results = Strategy._pointingPairsAndTripples(board);
         const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
         const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
-        results = Strategy._hiddenSubset(results.board, rowI, colI, 2, 'all', false);
+        results = Strategy._hiddenSubset(results.board, rowI, colI, setSize, 'all', false);
         return results;
+    }
+
+    static _runHiddenSubsetWithoutPPT(board, setSize=2){
+        const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
+        const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+        let results = Strategy._hiddenSubset(board, rowI, colI, setSize, 'all', true);
+        return results;
+    }
+
+    static _runBoxLineReductionWithoutPPT(board){
+        let results =  Strategy._BoxLineReduction(board, true, true);
+        if (results) {
+            return results;
+        }
+        return false;
     }
 
     static _runNakedSubset(board, setSize = 2) {
@@ -58,7 +73,15 @@ class Analyzer {
 
     static _runBoxLineReduction(board) {
         let results = Strategy._pointingPairsAndTripples(board);
-        results =  Strategy._BoxLineReduction(board, true);
+        results =  Strategy._BoxLineReduction(results.board, true);
+        if (results) {
+            return results;
+        }
+        return false;
+    }
+
+    static _runPointingPairsAndTripples(board) {
+        let results = Strategy._pointingPairsAndTripples(board, true);
         if (results) {
             return results;
         }
@@ -81,6 +104,9 @@ class Analyzer {
             case 'unique-candidate':
                 solveWith = ['unique-candidate'];
                 break;
+            case 'pointing-pairs-and-tripples':
+                solveWith = ['pointing-pairs-and-tripples'];
+                break;
             case 'naked-subset{setSize-2}':
                 solveWith = ['naked-subset{setSize-2}'];
                 break;
@@ -89,6 +115,16 @@ class Analyzer {
                 break;
             case 'hidden-subset{setSize-2}':
                 solveWith = ['pointing-pairs-and-tripples', 'hidden-subset{setSize-2}'];
+                break;
+            case 'box-line-reduction-without-ppt':
+                solveWith = ['box-line-reduction']; 
+                break;
+            case 'hidden-subset{setSize-2}-without-ppt':
+                solveWith = ['hidden-subset{setSize-2}']; 
+                break; 
+            case 'hidden-subset{setSize-3}-without-ppt':
+                solveWith = ['hidden-subset{setSize-3}'];
+                break;
         }
         return JSON.stringify({success: true, position, value, solveWith});
     }
@@ -109,9 +145,29 @@ class Analyzer {
             return Analyzer._getAnalysis('unique-candidate', results);
         }
 
+        results = Analyzer._runPointingPairsAndTripples(board); 
+        if(results){
+            return Analyzer._getAnalysis('pointing-pairs-and-tripples', results);
+        }
+
+        results = Analyzer._runBoxLineReductionWithoutPPT(board); 
+        if(results){
+            return Analyzer._getAnalysis('box-line-reduction-without-ppt', results); 
+        }
+
         results = Analyzer._runNakedSubset(board);
         if (results) {
             return Analyzer._getAnalysis('naked-subset{setSize-2}', results);
+        }
+
+        results = Analyzer._runHiddenSubsetWithoutPPT(board, 2);
+        if(results){
+            return Analyzer._getAnalysis('hidden-subset{setSize-2}-without-ppt', results);
+        }
+
+        results = Analyzer._runHiddenSubsetWithoutPPT(board, 3);
+        if(results){
+            return Analyzer._getAnalysis('hidden-subset{setSize-3}-without-ppt', results);
         }
 
         results = Analyzer._runBoxLineReduction(board);

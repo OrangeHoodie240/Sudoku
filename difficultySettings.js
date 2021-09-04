@@ -1,6 +1,6 @@
 const Strategy = require('./Strategy');
 const { Board } = require('./Board');
-
+const Analyzer = require('./Analyzer');
 
 // each strategy should take the board and return either false for unsuccefully
 // attempting ot solve a single cell or AN OBJECT with the board property for the 
@@ -184,6 +184,15 @@ const difficultySettings = {
                         colI,
                     });
             },
+            function(board){
+                let results = Strategy._pointingPairsAndTripples(board, true); 
+                if(results){
+                    if(results.board.cellsMissing < board.cellsMissing){
+                        return results; 
+                    }
+                }
+                return false;
+            },
             function (board) {
                 let results = Strategy._pointingPairsAndTripples(board);
                 results = Strategy._BoxLineReduction(results.board, true);
@@ -209,14 +218,78 @@ const difficultySettings = {
                 let results = Strategy._pointingPairsAndTripples(board);
                 const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
                 const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
-                results = Strategy._hiddenSubset(results.board, rowI, colI, 2, 'all', false);
+                results = Strategy._hiddenSubset(results.board, rowI, colI, 2, 'all');
                 return results;
             }
 
         ],
         timeLimit: 5000, // keep as 1000 was not working with this at all
 
-        strategyNames: ['sole-candidate', 'unique-candidate', 'box-line-redution', 'naked-subset{setSize-2}', 'hidden-subset{setSize-2}']
+        strategyNames: ['sole-candidate', 'unique-candidate', 'pointing-pairs-and-tripples', 'naked-subset{setSize-2}', 'box-line-reduction', 'hidden-subset{setSize-2}']
+    },
+    'level-test': {
+        strategies: [
+
+            function (board) {
+                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
+                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                return Strategy.applyStrategy(board, 'sole-candidate',
+                    {
+                        rowI,
+                        colI,
+                    });
+            },
+
+            function (board) {
+                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
+                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                return Strategy.applyStrategy(board, 'unique-candidate',
+                    {
+                        rowI,
+                        colI,
+                    });
+            },
+            function(board){
+                let results = Strategy._pointingPairsAndTripples(board, true); 
+                if(results){
+                    if(results.board.cellsMissing < board.cellsMissing){
+                        return results; 
+                    }
+                }
+                return false;
+            },
+            function (board) {
+                let results = Strategy._BoxLineReduction(board, true, true);
+                if (!results) {
+                    return false;
+                }
+                if (results.board.cellsMissing < board.cellsMissing) {
+                    return results;
+                }
+            },
+            function (board) {
+                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
+                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                return Strategy.applyStrategy(board, 'naked-subset',
+                    {
+                        rowI,
+                        colI,
+                        trySolveAll: true,
+                        additionalArgs: [2, 'all']
+                    });
+            },
+            function (board) {
+                let results = Strategy._pointingPairsAndTripples(board);
+                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
+                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                results = Strategy._hiddenSubset(results.board, rowI, colI, 2, 'all');
+                return results;
+            }
+
+        ],
+        timeLimit: 5000, // keep as 1000 was not working with this at all
+
+        strategyNames: ['sole-candidate', 'unique-candidate', 'pointing-pairs-and-tripples', 'box-line-reduction','naked-subset{setSize-2}', 'pointing-pairs-and-tripples-and-hidden-subset{setSize-2}']
     }
 }
 

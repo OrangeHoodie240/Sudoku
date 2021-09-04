@@ -350,13 +350,14 @@ class Strategy {
      * @param  {Array<Number, String, Boolean>} param3 
      * @returns {{board: Board}}
      */
-    static _hiddenSubset(board, rowI, colI, ...[setSize = 2, structureType = 'row', solveForPossibilities = false]) {
+    static _hiddenSubset(board, rowI, colI, ...[setSize = 2, structureType = 'row', calculate=false, solveForPossibilities = false]) {
         const originalCellCount = board.cellsMissing;
-        board = Board.copy(board);
-        
-        // temporary fix for bug        
-        const og = Board.copy(board);
-        
+        if(calculate){
+            board = new Board(Board.toString(board), {calculate: true});
+        }
+        else{
+            board = Board.copy(board);
+        }
         
 
 
@@ -487,6 +488,7 @@ class Strategy {
      * @returns {board: Board, solution: Array<Number, Number, 'String'>}
      */
     static _pointingPairsAndTripples(board, solve = false) {
+        const originalCellCount = board.cellsMissing; 
         board = new Board(Board.toString(board), { calculate: true });
 
         // create array of objects for the row and columns we will iterate over 
@@ -556,7 +558,9 @@ class Strategy {
 
         }
 
-
+        if(solve && board.cellsMissing === originalCellCount){
+            return false;
+        }
         return { board };
     }
 
@@ -569,10 +573,14 @@ class Strategy {
      * @param {Boolean} solve 
      * @returns {{board: Board, solution: [Number, Number, String]}}
      */
-    static _BoxLineReduction(board, solve = true) {
+    static _BoxLineReduction(board, solve = true, calculate=false) {
         const originalCellCount = board.cellsMissing; 
-        
-        board = Board.copy(board);
+        if(calculate){
+            board = new Board(Board.toString(board), {calculate: true}); 
+        }
+        else{
+            board = Board.copy(board);
+        }
         const structures = [{ 'get': Board.getRow, 'getBoxes': Board.getBoxRow }, {
             'get': Board.getCol,
             'getBoxes': Board.getBoxCol
