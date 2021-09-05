@@ -601,6 +601,20 @@ class Board {
         }
         return true; 
     }
+
+    /**
+     * Returns board as a 2d Array with each element a string
+     * @param {Board} board 
+     */
+    static serialize(board){
+        const serialized = [];
+        for(let i = 0; i < 9; i++){
+            let row = board.puzzle[i]; 
+            row = row.map(cell => cell.value); 
+            serialized.push(row);
+        }
+        return serialized; 
+    }
 }
 
 module.exports = { Board, Cell };

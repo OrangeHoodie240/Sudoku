@@ -291,4 +291,5 @@ describe('test Board.areCompatible', () => {
         Board.getBoxRow
         Board.getBoxCol
         Board.isCompatible
+        Board.serialize
 */

@@ -194,16 +194,6 @@ const difficultySettings = {
                 return false;
             },
             function (board) {
-                let results = Strategy._pointingPairsAndTripples(board);
-                results = Strategy._BoxLineReduction(results.board, true);
-                if (!results) {
-                    return false;
-                }
-                if (results.board.cellsMissing < board.cellsMissing) {
-                    return results;
-                }
-            },
-            function (board) {
                 const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
                 const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
                 return Strategy.applyStrategy(board, 'naked-subset',
@@ -223,9 +213,9 @@ const difficultySettings = {
             }
 
         ],
-        timeLimit: 5000, // keep as 1000 was not working with this at all
+        timeLimit: 50000000, // keep as 1000 was not working with this at all
 
-        strategyNames: ['sole-candidate', 'unique-candidate', 'pointing-pairs-and-tripples', 'naked-subset{setSize-2}', 'box-line-reduction', 'hidden-subset{setSize-2}']
+        strategyNames: ['sole-candidate', 'unique-candidate', 'pointing-pairs-and-tripples', 'naked-subset{setSize-2}', 'hidden-subset{setSize-2}']
     },
     'level-test': {
         strategies: [
@@ -287,7 +277,7 @@ const difficultySettings = {
             }
 
         ],
-        timeLimit: 5000, // keep as 1000 was not working with this at all
+        timeLimit: 100000,
 
         strategyNames: ['sole-candidate', 'unique-candidate', 'pointing-pairs-and-tripples', 'box-line-reduction','naked-subset{setSize-2}', 'pointing-pairs-and-tripples-and-hidden-subset{setSize-2}']
     }
