@@ -88,7 +88,7 @@ describe('Analyzer', () => {
         let data = [];
         while (board.cellsMissing > 0) {
             let analysis = Analyzer.analyze(board);
-            const { position, solveWith, value } = JSON.parse(analysis);
+            const { position, solveWith, value } = analysis;
             data.push(solveWith);
             board = Board.addValue(board, position[0], position[1], value);
         }

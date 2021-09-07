@@ -280,6 +280,29 @@ describe('test Board.areCompatible', () => {
     });
 });
 
+
+describe('test Board.getBoardFromFlatString', ()=>{
+const boardString1 = `0,2,0,0,0,0,8,0,0,0,6,5,1,0,0,0,4,7,0,8,0,0,0,0,0,1,5,0,0,0,5,2,8,0,7,0,2,9,8,0,1,0,4,5,0,6,5,0,4,0,0,1,0,2,0,0,6,8,0,0,7,3,1,5,1,3,9,7,4,6,0,8,0,7,2,0,0,1,5,0,4`;
+
+const boardString2 =
+`0,2,0,0,0,0,8,0,0
+0,6,5,1,0,0,0,4,7
+0,8,0,0,0,0,0,1,5
+0,0,0,5,2,8,0,7,0
+2,9,8,0,1,0,4,5,0
+6,5,0,4,0,0,1,0,2
+0,0,6,8,0,0,7,3,1
+5,1,3,9,7,4,6,0,8
+0,7,2,0,0,1,5,0,4`;
+
+    test('works', ()=>{
+       const board1 = Board.getBoardFromFlatString(boardString1);
+       const board2 = new Board(boardString2);
+       expect(Board.toString(board1))
+        .toEqual(Board.toString(board2)); 
+    });
+});
+
 /*
     Test:
         Board.constructor

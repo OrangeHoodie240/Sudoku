@@ -1,4 +1,3 @@
-const Strategy = require('./Strategy');
 
 class Cell {
     constructor(value = 0, rowI, colI) {
@@ -614,6 +613,22 @@ class Board {
             serialized.push(row);
         }
         return serialized; 
+    }
+
+    /**
+     * Takes a puzzle in a single string with each character comma delmited and returns a board object from it.
+     * @param {String} board 
+     * @returns {Board} 
+     */
+    static getBoardFromFlatString(board){
+        board = board.split(',');
+        let boardWithNewLines = '';
+        for(let i = 0; i < 9; i++){
+            let row = board.splice(0, 9);
+            row = row.join(',');
+            boardWithNewLines += row + ((i < 8) ? '\n' : '');
+        }
+        return new Board(boardWithNewLines);
     }
 }
 

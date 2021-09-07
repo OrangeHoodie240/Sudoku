@@ -195,11 +195,21 @@ describe('test Strategy._nakedSubset', () => {
     });
 
     test('returns updated possibilities when solveForPossibilities is set', () => {
-        board = new Board(boardString2, { calculate: true });
+        let board = new Board(boardString2, { calculate: true });
         let result = Strategy._nakedSubset(board, 5, 5, 2, 'box', true);
         expect(result)
             .toEqual(new Set(['5', '3']));
     });
+
+
+    // following is a temporary function added to Strategy but have included a test here
+    test('solveForPossibilitiesNakedSubset', ()=>{
+        let board = new Board(boardString2, { calculate: true });
+        board = Strategy.solveForPossibilitiesNakedSubset(board, 2);
+        expect(board.puzzle[5][5].possibleValues)
+            .toEqual(new Set(['5', '3']));
+    });
+
 });
 
 describe('test Strategy._pointingPairsAndTripples', () => {
@@ -279,7 +289,7 @@ describe('test hidden-subset', () => {
     0,0,0,0,0,0,0,0,0`;
 
     const boardString2 =
-    `1,2,7,9,3,4,5,6,8
+        `1,2,7,9,3,4,5,6,8
     3,4,6,2,5,8,1,7,9
     5,8,9,6,1,7,2,0,0
     0,0,0,3,7,5,4,8,0
@@ -343,7 +353,7 @@ describe('test _boxLineReduction', () => {
 });
 
 
-describe('test _lastCellRemaining', ()=>{
+describe('test _lastCellRemaining', () => {
     const boardstring1 = `0,1,6,0,0,7,8,0,3
     0,9,0,8,0,0,0,0,0
     8,7,0,0,0,1,0,6,0
@@ -352,12 +362,12 @@ describe('test _lastCellRemaining', ()=>{
     0,3,9,0,0,0,6,5,0
     0,6,0,9,0,0,0,2,0
     0,0,0,0,0,2,9,3,6
-    9,2,4,6,0,0,5,1,0`; 
+    9,2,4,6,0,0,5,1,0`;
 
-    test('works', ()=>{
-        let board = new Board(boardstring1); 
+    test('works', () => {
+        let board = new Board(boardstring1);
 
-        board = Strategy._lastRemainingCell(board).board; 
+        board = Strategy._lastRemainingCell(board).board;
 
         expect(board.puzzle[7][1].value)
             .toEqual('8');
