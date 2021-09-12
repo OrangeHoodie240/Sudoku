@@ -809,6 +809,18 @@ class Strategy {
         }
     }
 
+
+    /**
+     * Perform unique candidate by row and column, if it has already been performed by box. 
+     * Wrapping _updatePossibleValueRemoval 
+     * 
+     * @param {Board} board 
+     * @returns {{board: Board, solution: Array<Number, Number, String>}}
+     */
+    static _uniqueCandidateRowCol(board){
+        return Strategy._updatePossibleValueRemoval(board);       
+    }
+
     /**
      * 
      * This is a temporary wrapper that will return the board solved for possibilities.

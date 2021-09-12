@@ -630,6 +630,7 @@ class Board {
         }
         return new Board(boardWithNewLines);
     }
+
 }
 
 module.exports = { Board, Cell };
