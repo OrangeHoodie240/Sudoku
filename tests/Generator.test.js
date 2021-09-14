@@ -6,7 +6,6 @@ const { Board } = require('../Board');
 
 
 
-
 describe('test Generator._generateFullBoard', () => {
     test('generates full board', () => {
         for (let i = 0; i < 10; i++) {

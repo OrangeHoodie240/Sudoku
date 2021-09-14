@@ -9,6 +9,7 @@ const Analyzer = require('./Analyzer');
 const difficultySettings = {
     'level-one': {
         strategies: [
+
             function (board) {
                 const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
                 const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
@@ -16,7 +17,6 @@ const difficultySettings = {
                     {
                         rowI,
                         colI,
-                        trySolveAll: true
                     });
             },
 
@@ -27,17 +27,26 @@ const difficultySettings = {
                     {
                         rowI,
                         colI,
-                        trySolveAll: true
                     });
-            }
+            },
+            function(board){
+                const result = Strategy._uniqueCandidateRowCol(board); 
+                if(result.solution){
+                    return result; 
+                }
+                else{
+                    return false;
+                }
+            },
         ],
-        timeLimit: 6000,
-        strategyNames: ['sole-candidate', 'unique-candidate'],
-        lowerBound: 30,
-        upperBound: 40
+        timeLimit: 10000000,
+        lowerBound: 32, 
+        upperBound: 53,
+        strategyNames: ['sole-candidate', 'unique-candidate', 'unique-candidate-row-col']
     },
     'level-two': {
         strategies: [
+
             function (board) {
                 const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
                 const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
@@ -45,7 +54,6 @@ const difficultySettings = {
                     {
                         rowI,
                         colI,
-                        trySolveAll: true
                     });
             },
 
@@ -56,19 +64,26 @@ const difficultySettings = {
                     {
                         rowI,
                         colI,
-                        trySolveAll: true
                     });
             },
-
+            function(board){
+                const result = Strategy._uniqueCandidateRowCol(board); 
+                if(result.solution){
+                    return result; 
+                }
+                else{
+                    return false;
+                }
+            },
         ],
-        timeLimit: 10000,
-
-        strategyNames: ['sole-candidate', 'unique-candidate'],
-        upperBound: 55,
-        lowerBound: 32
+        timeLimit: 10000000,
+        lowerBound: 52, 
+        upperBound: 53,
+        strategyNames: ['sole-candidate', 'unique-candidate', 'unique-candidate-row-col']
     },
-    'level-three': {
+    'level-three-A': {
         strategies: [
+
             function (board) {
                 const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
                 const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
@@ -76,7 +91,6 @@ const difficultySettings = {
                     {
                         rowI,
                         colI,
-                        trySolveAll: true
                     });
             },
 
@@ -87,8 +101,16 @@ const difficultySettings = {
                     {
                         rowI,
                         colI,
-                        trySolveAll: true
                     });
+            },
+            function(board){
+                const result = Strategy._uniqueCandidateRowCol(board); 
+                if(result.solution){
+                    return result; 
+                }
+                else{
+                    return false;
+                }
             },
             function (board) {
                 let results = Strategy._pointingPairsAndTripples(board, true);
@@ -98,15 +120,17 @@ const difficultySettings = {
                     }
                 }
                 return false;
-            }
+            }, 
+           
         ],
-        timeLimit: 10000,
-        lowerBound: 32, 
-        upperBound: 55,
-        strategyNames: ['sole-candidate', 'unique-candidate', 'pointing-pairs-and-tripples',]
+        timeLimit: 10000000,
+        lowerBound: 50, 
+        upperBound: 53,
+        strategyNames: ['sole-candidate', 'unique-candidate', 'unique-candidate-row-col', 'pointing-pairs-and-triples']
     },
-    'level-four': {
+    'level-three-B': {
         strategies: [
+
             function (board) {
                 const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
                 const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
@@ -114,7 +138,6 @@ const difficultySettings = {
                     {
                         rowI,
                         colI,
-                        trySolveAll: true
                     });
             },
 
@@ -125,36 +148,36 @@ const difficultySettings = {
                     {
                         rowI,
                         colI,
-                        trySolveAll: true
                     });
             },
-            function (board) {
-                let results = Strategy._pointingPairsAndTripples(board, true);
-                if (results) {
-                    if (results.board.cellsMissing < board.cellsMissing) {
-                        return results;
-                    }
+            function(board){
+                const result = Strategy._uniqueCandidateRowCol(board); 
+                if(result.solution){
+                    return result; 
                 }
-                return false;
+                else{
+                    return false;
+                }
             },
             function (board) {
+                let results = Strategy._pointingPairsAndTripples(board, false);
                 const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
                 const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
-                return Strategy.applyStrategy(board, 'naked-subset',
+                return Strategy.applyStrategy(results.board, 'naked-subset',
                     {
                         rowI,
                         colI,
                         trySolveAll: true,
-                        additionalArgs: [2, 'all'],
+                        additionalArgs: [2, 'all']
                     });
-            }
+            }, 
         ],
-        timeLimit: 10000,
-        lowerBound: 32, 
-        upperBound: 55,
-        strategyNames: ['sole-candidate', 'unique-candidate', 'pointing-pairs-and-tripples', 'naked-subset{setSize-2}',]
-    },
-    'level-five': {
+        timeLimit: 10000000,
+        lowerBound: 52, 
+        upperBound: 53,
+        strategyNames: ['sole-candidate', 'unique-candidate', 'unique-candidate-row-col', 'naked-subset{setSize-2}']
+    }, 
+    'level-three-C': {
         strategies: [
 
             function (board) {
@@ -176,6 +199,15 @@ const difficultySettings = {
                         colI,
                     });
             },
+            function(board){
+                const result = Strategy._uniqueCandidateRowCol(board); 
+                if(result.solution){
+                    return result; 
+                }
+                else{
+                    return false;
+                }
+            },
             function (board) {
                 let results = Strategy._pointingPairsAndTripples(board, true);
                 if (results) {
@@ -186,7 +218,9 @@ const difficultySettings = {
                 return false;
             },
             function (board) {
-                let results = Strategy._BoxLineReduction(board, true, true);
+                let results = Strategy._pointingPairsAndTripples(board, false);
+                results = Strategy.solveForPossibilitiesNakedSubset(results.board); 
+                results = Strategy._BoxLineReduction(results, true, false);
                 if (!results) {
                     return false;
                 }
@@ -194,30 +228,57 @@ const difficultySettings = {
                     return results;
                 }
             },
+        ],
+        timeLimit: 10000000,
+        lowerBound: 52, 
+        upperBound: 53,
+        strategyNames: ['sole-candidate', 'unique-candidate', 'unique-candidate-row-col', 'box-line-reduction']
+    },
+    'level-three-D': {
+        strategies: [
+
             function (board) {
                 const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
                 const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
-                return Strategy.applyStrategy(board, 'naked-subset',
+                return Strategy.applyStrategy(board, 'sole-candidate',
                     {
                         rowI,
                         colI,
-                        trySolveAll: true,
-                        additionalArgs: [2, 'all']
                     });
             },
+
             function (board) {
-                let results = Strategy._pointingPairsAndTripples(board);
+                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
+                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                return Strategy.applyStrategy(board, 'unique-candidate',
+                    {
+                        rowI,
+                        colI,
+                    });
+            },
+            function(board){
+                const result = Strategy._uniqueCandidateRowCol(board); 
+                if(result.solution){
+                    return result; 
+                }
+                else{
+                    return false;
+                }
+            },
+            function (board) {
+                let results = Strategy._pointingPairsAndTripples(board, false);
+                results = Strategy.solveForPossibilitiesNakedSubset(results.board); 
+                results = Strategy._BoxLineReduction(results, false, false);
                 const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
                 const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
                 results = Strategy._hiddenSubset(results.board, rowI, colI, 2, 'all');
                 return results;
             }
-
         ],
-        timeLimit: 100000,
-        lowerBound: 32, 
-        upperBound: 50,
-        strategyNames: ['sole-candidate', 'unique-candidate', 'pointing-pairs-and-tripples', 'box-line-reduction', 'naked-subset{setSize-2}', 'pointing-pairs-and-tripples-and-hidden-subset{setSize-2}']
+        timeLimit: 10000000,
+        lowerBound: 52, 
+        upperBound: 53,
+        strategyNames: ['sole-candidate', 'unique-candidate', 'unique-candidate-row-col', 'hidden-subset{setSize-2}']
     }
 }
 

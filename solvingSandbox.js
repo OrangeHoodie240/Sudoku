@@ -4,11 +4,12 @@ const Generator = require('./Generator');
 const Strategy = require('./Strategy');
 const solve = require('./solve');
 const { Board } = require('./Board');
+const { createPuzzle, createPuzzles } = require('./puzzle_making/createPuzzles');
 
 const board3 =
     `1,2,4,3,6,0,7,0,9
     3,0,8,1,7,9,2,0,0
-    0,7,9,0,4,0,0,1,3
+    0,7,9,2,4,0,0,1,3
     2,0,0,0,0,0,0,7,0
     0,0,0,0,2,7,0,3,5
     7,9,0,0,1,0,0,2,8
@@ -19,25 +20,36 @@ const board3 =
 // const expertBoard = ``;
 
 // const data = [];
-let board = new Board(board3, {calculate:true});
-while (board.cellsMissing > 0) {
-    let analysis = Analyzer.analyze(board);
-    console.log('\n\n Board before Analysis');
-    console.log(Board.toString(board, true));
-    console.log('\n\n' + JSON.stringify(analysis));
-    console.log('\n\n')
+// let board = Generator.generatePuzzle('level-five');
+// while (board.cellsMissing > 0) {
+// let analysis = Analyzer.analyze(board);
+// console.log('\n\n Board before Analysis');
+// console.log(Board.toString(board, true));
+// console.log('\n\n' + JSON.stringify(analysis));
+// console.log('\n\n')
 
-    const {position, value, solveWith} = analysis;
-    board = Board.addValue(board, position[0], position[1], value);
-    // data.push(solveWith);
+// const {position, value, solveWith} = analysis;
+// board = Board.addValue(board, position[0], position[1], value);
+// data.push(solveWith);
 
-    // when analyzing tough board 
-    // console.log(analysis);
-    // console.log(data.length);
+// when analyzing tough board 
+// console.log(analysis);
+// console.log(data.length);
 
-}
-console.log('\n');
+// }
+// console.log('\n');
 
 // console.log(data);
 
 
+async function makePuzzle() {
+    const puzzle = await createPuzzle('level-three-D', 10);
+    console.log('output',puzzle);
+}
+async function doIt() {
+    const begin = Date.now();
+    await makePuzzle();
+    console.log(Date.now() - begin);
+}
+
+doIt();

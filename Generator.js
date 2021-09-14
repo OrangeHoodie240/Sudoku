@@ -88,6 +88,7 @@ class Generator {
         const strategiesLength = difficultySetting.strategies.length;
         let cellsLeft = 82;
 
+        const strategiesUsed = new Set();
         outerLoop:
         while (cellsLeft > board.cellsMissing) {
             for (let i = 0; i < strategiesLength; i++) {
@@ -103,23 +104,27 @@ class Generator {
                 let strategyName = difficultySetting.strategyNames[i];
                 let results = strategy(board);
                 if (results && results.board.cellsMissing < cellsLeft) {
+                    strategiesUsed.add(strategyName);
                     strategyNames.delete(strategyName);
                     board = results.board;
                     continue outerLoop;
                 }
             }
         }
-
         return {
             boardSolved: (board.cellsMissing === 0),
             difficultyMet: (strategyNames.size === 0),
             strategiesRequired: Math.abs(strategyNames.size - difficultySetting.strategyNames.length),
-            solvedBoard: board
+            solvedBoard: board,
+            strategiesUsed
         }
     }
 
 
+
     static generatePuzzle(difficulty = 'level-one') {
+
+        // get difficultySetting
         let difficultySetting;
         if (typeof difficulty === 'string') {
             difficultySetting = difficultySettings[difficulty];
@@ -128,12 +133,24 @@ class Generator {
             difficultySetting = difficulty;
         }
 
+        // get upper and lower bounds
         const lowerBlankCellBoundaryInclusive = difficultySetting['lowerBound'] || 32;
-        const upperBlankCellBoundaryInclusive = difficultySetting['upperBound'] || 60;
+        const upperBlankCellBoundaryInclusive = difficultySetting['upperBound'] || 55;
+
+        // loop over the generation process until a board is returned
+        // each iteration will create new randomized full board
         while (true) {
+            // console.log('new board');
             let fullBoard = Generator._generateFullBoard();
             let time = Date.now();
+
+            // fallback is used to reset to unwind the recursion once it reaches the upper bound of blank cells
+            // w/o meeting the requirments specified in difficultySettings
             let fallBack = null;
+
+            let fallBackTo = null;
+
+            // recursive call
             function _generate(board, strategiesUsed = 0) {
                 if (board.break) {
                     return board;
@@ -146,10 +163,26 @@ class Generator {
                     return board;
                 }
 
+                // get list of filled cells for the board object
+                // then make a duplicate (filledCells2)
                 const filledCells1 = Generator._getFilledCellsShuffled(board);
                 const filledCells2 = [...filledCells1];
-                if (!fallBack) {
-                    fallBack = filledCells2;
+                // fallback is within the scope of all recursive calls
+                // It is used to mark a particular call of _generate to fall back to once fall back occurs. 
+                // if this code runs for first call of _generate or if fallBack was reset to null after it occurred and 
+                // the possibilities depleted for the previous _generate call that was marked for fallBack, the current 
+                // call will be marked by setting fallBack to its instance of filledCells2
+                if (!fallBack && filledCells2.length < 60) {
+                    fallBack = board;
+                    fallBack.strategiesUsed = strategiesUsed;
+                    fallBackTo = board.cellsMissing;
+                    
+                    // console.log('board fall back to ', fallBackTo);
+
+                    
+                    // if(strategiesUsed === 4){
+                        // console.log(Generator.secondGenerate(board, difficultySetting, 4));
+                    // }
                 }
                 while (filledCells2.length > 0) {
                     if (filledCells1.length === 0 && board.cellsMissing >= upperBlankCellBoundaryInclusive - 1) {
@@ -157,10 +190,15 @@ class Generator {
                         return board;
                     }
                     const cell = (filledCells1.length > 0) ? filledCells1.pop() : filledCells2.pop();
+
                     const [rowI, colI] = cell.indices;
+
+                    // make a new board w/o the that cell's value
                     let newBoard = Board.removeValue(board, rowI + 1, colI + 1);
+
+                    // test new board against the difficulty settings and to make sure it is still solvable
                     const { difficultyMet, boardSolved, strategiesRequired } = Generator._applyDifficultySetting(newBoard, difficultySetting, time);
-                    // console.log(newBoard.cellsMissing, strategiesRequired, boardSolved, Date.now() - time, filledCells2.length);
+                    // console.log(newBoard.cellsMissing, strategiesUsed, boardSolved, Date.now() - time, filledCells2.length, fallBackTo);
 
                     //If board meets requirements, return
                     if (difficultyMet && boardSolved && newBoard.cellsMissing > lowerBlankCellBoundaryInclusive) {
@@ -170,43 +208,57 @@ class Generator {
 
                     // if the board was solved but didn't meet the requirments BUT the board didn't reach its 
                     // limit on empty cells...
-                    if (!difficultyMet && boardSolved && board.cellsMissing < upperBlankCellBoundaryInclusive) {
+                    if (!difficultyMet && boardSolved && newBoard.cellsMissing < upperBlankCellBoundaryInclusive) {
+
 
                         // continue to the next iteration of this board state if the move did not result in an increase in 
                         // strategies used to solve it (providing we have any more moves)
-                        if (filledCells1.length > 0 && strategiesRequired <= strategiesUsed) {
+                        if (filledCells1.length > 0 && strategiesRequired === strategiesUsed) {
                             continue;
                         }
-                        // if the move did result in an increase to the number of strategies used, increment the total 
-                        // and do not iterate to the next move on the state
-                        else if (filledCells1.length > 0 && strategiesRequired > strategiesUsed) {
-                            strategiesUsed++;
+                        let closeToSolve = (difficultySetting.strategies.length - strategiesUsed) <= 1;
+
+                        if (fallBack && filledCells1.length > 0 && strategiesRequired > fallBack.strategiesUsed) {
+                            let distance1 = 81 - newBoard.cellsMissing;
+                            let distance2 = 81 - fallBack.cellsMissing;
+                            let acceptableLeap = 0;
+                            switch (difficultySetting.strategies.length - strategiesUsed) {
+                                case 2:
+                                    acceptableLeap = 15;
+                                    break;
+                                default:
+                                    acceptableLeap = 10;
+                            }
+                            if (Math.abs(distance1 - distance2) <= acceptableLeap) {
+                                fallBack = null;
+                            }
                         }
 
-
+                        // if(closeToSolve) console.log(closeToSolve);
                         // make the recursive call 
-                        newBoard = _generate(newBoard, strategiesUsed);
+                        newBoard = _generate(newBoard, strategiesRequired);
+
                         // if the board comes back to us broken continue to the next iteration on this board state
-
-                        if (newBoard.fallBack && fallBack !== filledCells2) {
-                            return newBoard;
-                        }
-                        else if (newBoard.fallBack && filledCells2 === fallBack && filledCells1.length === 0) {
-                            fallBack = null;
-                            continue;
-                        }
-                        else if (newBoard.fallBack && filledCells2 === fallBack) {
-                            continue;
-                        }
-
                         if (newBoard.break) {
                             continue;
                         }
-                        // otherwise the board is solved 
-                        else {
-                            newBoard.isComplete = true;
+
+                        if (newBoard.fallBack && fallBack !== board) {
                             return newBoard;
                         }
+                        else if (newBoard.fallBack && board === fallBack) {
+                            if (closeToSolve && filledCells2.length === 1 || !closeToSolve && filledCells1.length === 0) {
+                                // when fallBack hits null the next call of _generate will set the call after as the next fall 
+                                // back call
+                                fallBack = null;
+                            }
+                        }
+
+                        if (newBoard.isComplete) {
+                            return newBoard;
+                        }
+
+                        continue;
                     }
                     // if the board was not solved but the number of empty cells are less than the maximum
                     // continue to the next iteration
@@ -214,7 +266,6 @@ class Generator {
                         continue;
                     }
                 }
-
                 board.break = true;
                 return board;
             }
@@ -222,21 +273,80 @@ class Generator {
             let puzzle = _generate(fullBoard);
             if (puzzle.break) continue;
             else {
-                return puzzle;
+                let results = Generator._applyDifficultySetting(puzzle, difficultySetting, Date.now());
+                if (results.difficultyMet) {
+                    return puzzle;
+                }
+                else {
+                    console.log('difficulty failed');
+                    continue;
+                }
             }
         }
 
     }
 
+
+    static secondGenerate(board, difficultySetting, strategiesUsed) {
+        // get difficultySetting
+        let time = Date.now(); 
+
+        const lowerBlankCellBoundaryInclusive = difficultySetting['lowerBound'] || 32;
+        const upperBlankCellBoundaryInclusive = difficultySetting['upperBound'] || 55;
+
+        let boardIsComplete = false;
+        let count = 0;
+        let step = 1;
+        while (!boardIsComplete) {
+            if (Date.now() - time > 60000) return 'did not work';
+
+            let filledCells = Generator._getFilledCellsShuffled(board);
+            let numberOfCells = (upperBlankCellBoundaryInclusive - board.cellsMissing >= step) ? step : upperBlankCellBoundaryInclusive - board.cellsMissing;
+            let newBoard = Board.copy(board);
+            for (let i = 0; i < numberOfCells; i++) {
+                let ind = Math.floor(Math.random() * filledCells.length);
+                let cell = filledCells.splice(ind, 1)[0];
+                let [rowI, colI] = cell.indices;
+
+                newBoard = Board.removeValue(newBoard, rowI + 1, colI + 1, true);
+            }
+            let newState = Generator._applyDifficultySetting(newBoard, difficultySetting, Date.now());
+            if (!newState.boardSolved) {
+                continue;
+            }
+
+            if (newState.strategiesRequired > strategiesUsed) {
+                strategiesUsed = newState.strategiesRequired;
+                board = newBoard;
+                count = 0;
+                step = 1;
+                console.log(newState);
+            }
+
+            if (newState.difficultyMet && board.cellsMissing >= lowerBlankCellBoundaryInclusive) {
+                return board;
+            }
+            count++
+            if (count > 80) {
+                count = 0;
+                step++;
+            }
+        }
+    }
+
 }
 
 // for(let i=0;i < 10; i++){
-    // const board = Generator.generatePuzzle('level-five');
-    // console.log(i + 1);
-// }
+// let now = Date.now(); 
+// const time = Date.now();
+// const board = Generator.generatePuzzle('level-five-D');
+// console.log(Date.now() - time);
+// console.log(Date.now() - now, i + 1);
 // console.log(Board.toString(board));
 
-// console.log(Generator._applyDifficultySetting(board, difficultySettings['level-test'], Date.now()));
+// }
+
+// console.log(Generator._applyDifficultySetting(board, difficultySettings['level-five'], Date.now()));
 
 
 module.exports = Generator;
