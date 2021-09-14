@@ -338,15 +338,15 @@ class Generator {
 
 // for(let i=0;i < 10; i++){
 // let now = Date.now(); 
-// const time = Date.now();
-// const board = Generator.generatePuzzle('level-five-D');
-// console.log(Date.now() - time);
+const time = Date.now();
+const board = Generator.generatePuzzle('level-test');
+console.log(Date.now() - time);
 // console.log(Date.now() - now, i + 1);
 // console.log(Board.toString(board));
 
 // }
 
-// console.log(Generator._applyDifficultySetting(board, difficultySettings['level-five'], Date.now()));
+console.log(Generator._applyDifficultySetting(board, difficultySettings['level-test'], Date.now()));
 
 
 module.exports = Generator;
