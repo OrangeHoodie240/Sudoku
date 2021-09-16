@@ -22,7 +22,10 @@ class Cell {
         this._possibleValues.add(val);
     }
 
-    /**  takes an array of characters where each number is a string value
+    /**  
+     * @param {Array<String>} stringArray
+     * @returns {Array<Cell>}
+     * takes an array of characters where each number is a string value
      * 
      *   returns the cooresponding array of cells 
      */

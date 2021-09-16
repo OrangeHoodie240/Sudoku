@@ -1,6 +1,7 @@
 const Strategy = require('./Strategy');
 const SetMethods = require('./SetMethods');
 const { Board } = require('./Board');
+const {StrategyMap} = require('./AnalyzerConfiguration');
 
 
 function comparePossibleValues(boardA, boardB) {
@@ -168,89 +169,8 @@ class Analyzer {
         position[0]++;
         position[1]++;
         const value = results.solution[2];
-        let solveWith = null;
-        switch (strategy) {
-            case 'last-remaining-cell':
-                solveWith = ['last-remaining-cell'];
-                break;
-            case 'sole-candidate':
-                solveWith = ['sole-candidate'];
-                break;
-            case 'unique-candidate':
-                solveWith = ['unique-candidate'];
-                break;
-
-            case 'unique-candidate-row-or-col': 
-                solveWith = ['unique-candidate-row-or-col'] ;
-                break;
-                
-            case 'pointing-pairs-and-tripples':
-                solveWith = ['pointing-pairs-and-tripples'];
-                break;
-            case 'naked-subset{setSize-2}':
-                solveWith = ['naked-subset{setSize-2}'];
-                break;
-            case 'box-line-reduction':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction'];
-                break;
-            case 'hidden-subset{setSize-2}':
-                solveWith = ['pointing-pairs-and-tripples', 'hidden-subset{setSize-2}'];
-                break;
-            case 'box-line-reduction-without-ppt':
-                solveWith = ['box-line-reduction'];
-                break;
-            case 'hidden-subset{setSize-2}-without-ppt':
-                solveWith = ['hidden-subset{setSize-2}'];
-                break;
-            case 'naked-subset{setSize-3}':
-                solveWith = ['naked-subset{setSize-3}'];
-                break;
-            case 'hidden-subset{setSize-3}-without-ppt':
-                solveWith = ['hidden-subset{setSize-3}'];
-                break;
-            case 'naked-subset{setSize-4}':
-                solveWith = ['naked-subset{setSize-4}'];
-                break;
-            case 'hidden-subset{setSize-4}-without-ppt':
-                solveWith = ['hidden-subset{setSize-4}'];
-                break;
-            case 'ppt-blr-ns{setSize-2}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'naked-subset{setSize-2}'];
-                break;
-            case 'ppt-blr-ns{setSize-3}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'naked-subset{setSize-3}'];
-                break;
-            case 'ppt-blr-hs{setSize-2}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'hidden-subset{setSize-2}'];
-                break;
-            case 'ppt-blr-hs{setSize-3}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'hidden-subset{setSize-3}'];
-                break;
-            case 'ppt-blr-ns{setSize-2}-hs{setSize-2}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'naked-subset{setSize-2}', 'hidden-subset{setSize-2}'];
-                break;
-            case 'ppt-blr-ns{setSize-2}-hs{setSize-3}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'naked-subset{setSize-2}', 'hidden-subset{setSize-3}'];
-                break;
-            case 'ppt-blr-ns{setSize-3}-hs{setSize-2}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'naked-subset{setSize-3}', 'hidden-subset{setSize-2}'];
-                break;
-            case 'ppt-blr-ns{setSize-3}-hs{setSize-3}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'naked-subset{setSize-3}', 'hidden-subset{setSize-3}'];
-                break;
-            case 'ppt-blr-hs{setSize-2}-ns{setSize-2}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'hidden-subset{setSize-2}', 'naked-subset{setSize-2}'];
-                break;
-            case 'ppt-blr-hs{setSize-2}-ns{setSize-3}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'hidden-subset{setSize-2}', 'naked-subset{setSize-3}'];
-                break;
-            case 'ppt-blr-hs{setSize-3}-ns{setSize-2}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'hidden-subset{setSize-3}', 'naked-subset{setSize-2}'];
-                break;
-            case 'ppt-blr-hs{setSize-3}-ns{setSize-3}':
-                solveWith = ['pointing-pairs-and-tripples', 'box-line-reduction', 'hidden-subset{setSize-3}', 'naked-subset{setSize-3}'];
-                break;
-        }
+        const solveWith = StrategyMap[strategy]; 
+        
         return { success: true, position, value, solveWith };
     }
 
@@ -259,7 +179,6 @@ class Analyzer {
         if (results) {
             return Analyzer._getAnalysis('last-remaining-cell', results);
         }
-
         results = Analyzer._runSoleCandidate(board);
         if (results) {
             return Analyzer._getAnalysis('sole-candidate', results);
@@ -282,7 +201,7 @@ class Analyzer {
 
         results = Analyzer._runBoxLineReductionWithoutPPT(board);
         if (results) {
-            return Analyzer._getAnalysis('box-line-reduction-without-ppt', results);
+            return Analyzer._getAnalysis('box-line-reduction', results);
         }
 
         results = Analyzer._runNakedSubset(board);
@@ -292,7 +211,7 @@ class Analyzer {
 
         results = Analyzer._runHiddenSubsetWithoutPPT(board, 2);
         if (results) {
-            return Analyzer._getAnalysis('hidden-subset{setSize-2}-without-ppt', results);
+            return Analyzer._getAnalysis('hidden-subset{setSize-2}', results);
         }
         results = Analyzer._runNakedSubset(board, 3);
         if (results) {
@@ -301,7 +220,7 @@ class Analyzer {
 
         results = Analyzer._runHiddenSubsetWithoutPPT(board, 3);
         if (results) {
-            return Analyzer._getAnalysis('hidden-subset{setSize-3}-without-ppt', results);
+            return Analyzer._getAnalysis('hidden-subset{setSize-3}', results);
         }
 
 
@@ -312,7 +231,7 @@ class Analyzer {
 
         results = Analyzer._runHiddenSubsetWithoutPPT(board, 4);
         if (results) {
-            return Analyzer._getAnalysis('hidden-subset{setSize-3}-without-ppt', results);
+            return Analyzer._getAnalysis('hidden-subset{setSize-3}', results);
         }
 
 
@@ -321,13 +240,13 @@ class Analyzer {
         // this is with ppt
         results = Analyzer._runBoxLineReduction(board);
         if (results) {
-            return Analyzer._getAnalysis('box-line-reduction', results);
+            return Analyzer._getAnalysis('ppt-blr', results);
         }
 
         // this is with ppt
         results = Analyzer._runHiddenSubset(board);
         if (results) {
-            return Analyzer._getAnalysis('hidden-subset{setSize-2}', results);
+            return Analyzer._getAnalysis('ppt-hs{setSize-2}', results);
         }
 
 

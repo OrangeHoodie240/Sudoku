@@ -3,6 +3,7 @@ const difficultySettings = require('./difficultySettings');
 const solve = require('./solve');
 const { Board } = require('./Board');
 
+
 const blankSudokuString =
     `0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0
@@ -121,7 +122,15 @@ class Generator {
     }
 
 
-
+    /**
+     * 
+     * Takes a string specifying the difficulty.
+     * Possible values are 'level-one', 'level-two', 'level-three-A', 'level-three-B', and 'level-three-C'. 
+     * Returns a new board meeting the difficulty requirmenets.
+     * 
+     * @param {String} difficulty 
+     * @returns {Board}
+     */
     static generatePuzzle(difficulty = 'level-one') {
 
         // get difficultySetting
@@ -138,20 +147,24 @@ class Generator {
         const upperBlankCellBoundaryInclusive = difficultySetting['upperBound'] || 55;
 
         // loop over the generation process until a board is returned
-        // each iteration will create new randomized full board
+        // each iteration will create new randomized full board 
+        // if the first attempt to creating a board fails, it automatically begins atempting the 
+        // second and so on
         while (true) {
-            // console.log('new board');
             let fullBoard = Generator._generateFullBoard();
             let time = Date.now();
 
-            // fallback is used to reset to unwind the recursion once it reaches the upper bound of blank cells
+            // fallback is used to unwind the recursion once it reaches the upper bound of blank cells
             // w/o meeting the requirments specified in difficultySettings
             let fallBack = null;
 
+            // fallBackTo keeps track of the number of cells missing on the board at the state we are falling back 
+            // to
             let fallBackTo = null;
 
             // recursive call
             function _generate(board, strategiesUsed = 0) {
+                // if the board is broken, meaning it                 
                 if (board.break) {
                     return board;
                 }
@@ -167,30 +180,44 @@ class Generator {
                 // then make a duplicate (filledCells2)
                 const filledCells1 = Generator._getFilledCellsShuffled(board);
                 const filledCells2 = [...filledCells1];
+
+
+                                /*filledCells1 And filledCells2 Explanation */
+                // we iterate over filledCells1 removing a cell and determing if doing so will A. increase the number of 
+                // strategies required to solve the board and B. still yield a solvable result. If so we make a recursive call
+                // to examine that board state before continuing on if the recursive call comes back negative. 
+                // if none of the cells from filledCells1 increase the strategies required or if they all come back from their 
+                // recursive call as negative, we try either only the first cell in filledCells2 or we try them all. Whether
+                // we try them all or only one is determined by how close the board is to solving.
+
+
+
+
                 // fallback is within the scope of all recursive calls
                 // It is used to mark a particular call of _generate to fall back to once fall back occurs. 
                 // if this code runs for first call of _generate or if fallBack was reset to null after it occurred and 
                 // the possibilities depleted for the previous _generate call that was marked for fallBack, the current 
-                // call will be marked by setting fallBack to its instance of filledCells2
+                // call will be marked by setting fallBack to its instance of the Board
                 if (!fallBack && filledCells2.length < 60) {
                     fallBack = board;
                     fallBack.strategiesUsed = strategiesUsed;
                     fallBackTo = board.cellsMissing;
-                    
-                    // console.log('board fall back to ', fallBackTo);
 
-                    
-                    // if(strategiesUsed === 4){
-                        // console.log(Generator.secondGenerate(board, difficultySetting, 4));
-                    // }
                 }
+
+                // the break condition for this loop occurs when we have attempted recursive calls for removing each 
+                // possible cell but have failed
                 while (filledCells2.length > 0) {
+
+                    // if we are out of cells from filledCells1 and taking any more cells would result in breakin our
+                    // upper bound requirment, we fall back to our fall back board state
                     if (filledCells1.length === 0 && board.cellsMissing >= upperBlankCellBoundaryInclusive - 1) {
                         board.fallBack = true;
                         return board;
                     }
-                    const cell = (filledCells1.length > 0) ? filledCells1.pop() : filledCells2.pop();
 
+                    // get next cell and its indices
+                    const cell = (filledCells1.length > 0) ? filledCells1.pop() : filledCells2.pop();
                     const [rowI, colI] = cell.indices;
 
                     // make a new board w/o the that cell's value
@@ -198,7 +225,6 @@ class Generator {
 
                     // test new board against the difficulty settings and to make sure it is still solvable
                     const { difficultyMet, boardSolved, strategiesRequired } = Generator._applyDifficultySetting(newBoard, difficultySetting, time);
-                    // console.log(newBoard.cellsMissing, strategiesUsed, boardSolved, Date.now() - time, filledCells2.length, fallBackTo);
 
                     //If board meets requirements, return
                     if (difficultyMet && boardSolved && newBoard.cellsMissing > lowerBlankCellBoundaryInclusive) {
@@ -216,13 +242,21 @@ class Generator {
                         if (filledCells1.length > 0 && strategiesRequired === strategiesUsed) {
                             continue;
                         }
+
+                        // test if board close to meeting its strategy requirments.
                         let closeToSolve = (difficultySetting.strategies.length - strategiesUsed) <= 1;
 
+                        // if the board increased the number of strategies required, determine the distance it is from the 
+                        // current fall back board, and relative to how close the board is to meeting its strategy requirments, 
+                        // decide whether to set this board as the new fall back state
                         if (fallBack && filledCells1.length > 0 && strategiesRequired > fallBack.strategiesUsed) {
                             let distance1 = 81 - newBoard.cellsMissing;
                             let distance2 = 81 - fallBack.cellsMissing;
                             let acceptableLeap = 0;
                             switch (difficultySetting.strategies.length - strategiesUsed) {
+                                case 1: 
+                                    acceptableLeap = 81; 
+                                    break;
                                 case 2:
                                     acceptableLeap = 15;
                                     break;
@@ -234,7 +268,6 @@ class Generator {
                             }
                         }
 
-                        // if(closeToSolve) console.log(closeToSolve);
                         // make the recursive call 
                         newBoard = _generate(newBoard, strategiesRequired);
 
@@ -243,10 +276,16 @@ class Generator {
                             continue;
                         }
 
+                        // if the board reached a state that calls for us to go back to the fall back state, and if the 
+                        // current board state is not the fall back state, return the board
                         if (newBoard.fallBack && fallBack !== board) {
                             return newBoard;
                         }
+                        // if newBoard is marked to fall back and the current board is the fallback state...
                         else if (newBoard.fallBack && board === fallBack) {
+                            // if A.) we are close to board completion but our out of cells to explore for this board state
+                            // or if B.) we are not close to solving and have explored all of filledCell1 cells, set the next
+                            // state from the next recursive call as the new fall back state
                             if (closeToSolve && filledCells2.length === 1 || !closeToSolve && filledCells1.length === 0) {
                                 // when fallBack hits null the next call of _generate will set the call after as the next fall 
                                 // back call
@@ -286,67 +325,8 @@ class Generator {
 
     }
 
-
-    static secondGenerate(board, difficultySetting, strategiesUsed) {
-        // get difficultySetting
-        let time = Date.now(); 
-
-        const lowerBlankCellBoundaryInclusive = difficultySetting['lowerBound'] || 32;
-        const upperBlankCellBoundaryInclusive = difficultySetting['upperBound'] || 55;
-
-        let boardIsComplete = false;
-        let count = 0;
-        let step = 1;
-        while (!boardIsComplete) {
-            if (Date.now() - time > 60000) return 'did not work';
-
-            let filledCells = Generator._getFilledCellsShuffled(board);
-            let numberOfCells = (upperBlankCellBoundaryInclusive - board.cellsMissing >= step) ? step : upperBlankCellBoundaryInclusive - board.cellsMissing;
-            let newBoard = Board.copy(board);
-            for (let i = 0; i < numberOfCells; i++) {
-                let ind = Math.floor(Math.random() * filledCells.length);
-                let cell = filledCells.splice(ind, 1)[0];
-                let [rowI, colI] = cell.indices;
-
-                newBoard = Board.removeValue(newBoard, rowI + 1, colI + 1, true);
-            }
-            let newState = Generator._applyDifficultySetting(newBoard, difficultySetting, Date.now());
-            if (!newState.boardSolved) {
-                continue;
-            }
-
-            if (newState.strategiesRequired > strategiesUsed) {
-                strategiesUsed = newState.strategiesRequired;
-                board = newBoard;
-                count = 0;
-                step = 1;
-                console.log(newState);
-            }
-
-            if (newState.difficultyMet && board.cellsMissing >= lowerBlankCellBoundaryInclusive) {
-                return board;
-            }
-            count++
-            if (count > 80) {
-                count = 0;
-                step++;
-            }
-        }
-    }
-
 }
 
-// for(let i=0;i < 10; i++){
-// let now = Date.now(); 
-const time = Date.now();
-const board = Generator.generatePuzzle('level-test');
-console.log(Date.now() - time);
-// console.log(Date.now() - now, i + 1);
-// console.log(Board.toString(board));
-
-// }
-
-console.log(Generator._applyDifficultySetting(board, difficultySettings['level-test'], Date.now()));
 
 
 module.exports = Generator;

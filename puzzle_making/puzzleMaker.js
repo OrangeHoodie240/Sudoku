@@ -1,9 +1,9 @@
 const { Board } = require('../Board');
-const {createPuzzles} = require('./createPuzzles');
+const {createPuzzles, createPuzzle} = require('./createPuzzles');
 
 function getRandomLevel(){
     const n = Math.floor(Math.random() * 4);
-    let levels = ['level-three-A', 'level-three-B', 'level-three-C', 'level-three-D']; 
+    let levels = ['level-three-A', 'level-three-B', 'level-three-C']; 
     return levels[n];
 }
 
@@ -20,11 +20,26 @@ fileName = './puzzle_making/puzzles/' + fileName + '.json';
 
 let level = process.argv[3].trim();
 
+
+let step = 10;
 let useMultipleLevles = null;
 if(level === 'level-three'){
     useMultipleLevles = true;
+    step = 1; 
 } 
 
+
+let getPuzzle; 
+if(step === 1){
+    getPuzzle = async function(level){
+        return await createPuzzle(level, 10);
+    } 
+}
+else{
+    getPuzzle = async function(level, puzzleNumber){
+        return await createPuzzles(level, puzzleNumber);
+    }
+}
 
 if (!levels.includes(level)) {
     throw new Error("Must provide valid level");
@@ -37,26 +52,52 @@ number = Number(number);
 let data = {};
 
 async function makePuzzlesAsync() {
-    for (let i = 1; i <= number;) {
+    let start = 1; 
+
+    try{
+        data = fs.readFileSync(fileName);
+        data = JSON.parse(data);
+        start = Number(data.length) + 1; 
+    }
+    catch(err){
+        console.log('creating new file');
+    }
+
+    // iterate over every puzzle generation
+    for (let i = start; i <= number;) {
+        // if level three get a random level (A, B or C)
         if(useMultipleLevles) level = getRandomLevel();
+
+        // if we have less puzzles to generate then the step, set the puzzleNumber to the remainder
         let puzzleNumber; 
-        if(number - (i - 1) < 10){
+        if(number - (i - 1) < step){
             puzzleNumber = number - (i - 1); 
         }
         else{
-            puzzleNumber = 10; 
+            puzzleNumber = step; 
         }
-        let boards = await createPuzzles(level, puzzleNumber); 
+        
+
+        let boards = await getPuzzle(level, puzzleNumber); 
+
         // if this is not the first iteration load the data 
         if (i > 1) {
             data = fs.readFileSync(fileName);
             data = JSON.parse(data);
         }
 
-        for(let j = i, k=0; j < i + puzzleNumber; j++, k++){
-            data[j] = boards[k];
-            data['length'] = j;
+
+        if(step !== 1){
+            for(let j = i, k=0; j < i + puzzleNumber; j++, k++){
+                data[j] = boards[k];
+                data['length'] = j;
+            }
         }
+        else{
+            data[i] = boards; 
+            data['length'] = i; 
+        }
+        
         
         data = JSON.stringify(data);
         fs.writeFileSync(fileName, data, 'utf-8');
