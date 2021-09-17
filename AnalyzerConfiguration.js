@@ -1,4 +1,4 @@
-
+const AnalyzerStrategies = require('./AnalyzerStrategies');
 
 
 // string constants that will reoccur
@@ -45,36 +45,36 @@ const StrategyMap = {
     'ppt-blr-hs{setSize-3}-ns{setSize-3}': [pointingPairsAndTriples, boxLineReduction, hiddenSubsetSetSize3, nakedSubsetSetSize3]
 };
 
-// const StrategyArray = [
-//     {strategy: _runLastRemainingCell, name: lastRemainingCell}, 
-//     {strategy: _runSoleCandidate, name: soleCandidate}, 
-//     {strategy: _runUniqueCandidate, name: uniqueCandidate}, 
-//     {strategy: _runUniqueCandidateRowCol, name: uniqueCandidateRowOrCol},
-//     {strategy: _runPointingPairsAndTripples, name: pointingPairsAndTriples},
-//     {strategy: _runBoxLineReductionWithoutPPT, name: boxLineReduction}, 
-//     {strategy: _runNakedSubset, name: nakedSubsetSetSize2}, 
-//     {strategy: _runHiddenSubsetWithoutPPT, name: hiddenSubsetSetSize2}, 
-//     {strategy: (board)=>_runNakedSubset(board, 3), name: nakedSubsetSetSize3}, 
-//     {strategy: (board)=>_runHiddenSubsetWithoutPPT(board, 3), name: hiddenSubsetSetSize3}, 
-//     {strategy: (board)=>_runNakedSubset(board, 4), name: nakedSubsetSetSize4}, 
-//     {strategy: (board)=>_runHiddenSubsetWithoutPPT(board, 4), name: hiddenSubsetSetSize4}, 
-//     {strategy: _runBoxLineReduction, name: 'ppt-blr'}, 
-//     {strategy: _runHiddenSubset, name: 'ppt-hs{setSize-2}'}, 
-//     {strategy: (board)=>_runPptBlrNs(board,2), name: 'ppt-blr-ns{setSize-2}'}, 
-//     {strategy: (board)=>_runPptBlrNs(board,3), name: 'ppt-blr-ns{setSize-3}'}, 
-//     {strategy: (board)=>_runPptBlrHs(board, 2), name: 'ppt-blr-hs{setSize-2}'}, 
-//     {strategy: (board)=>_runPptBlrHs(board, 3), name: 'ppt-blr-hs{setSize-3}'}, 
-//     {strategy: (board)=>_runPptBlrHsNs(board, 2, 2), name: 'ppt-blr-hs{setSize-2}-ns{setSize-2}'}, 
-//     {strategy: (board)=>_runPptBlrNsHs(board, 2, 2), name: 'ppt-blr-ns{setSize-2}-hs{setSize-2}'}, 
-//     {strategy: (board)=>_runPptBlrHsNs(board, 2, 3), name: 'ppt-blr-hs{setSize-2}-ns{setSize-3}'}, 
-//     {strategy: (board)=>_runPptBlrNsHs(board, 2, 3), name: 'ppt-blr-ns{setSize-2}-hs{setSize-3}'}, 
-//     {strategy: (board)=>_runPptBlrHsNs(board, 3, 2), name: 'ppt-blr-hs{setSize-3}-ns{setSize-2}'}, 
-//     {strategy: (board)=>_runPptBlrNsHs(board, 3, 2), name: 'ppt-blr-ns{setSize-3}-hs{setSize-2}'}, 
-//     {strategy: (board)=>_runPptBlrHsNs(board, 3, 3), name: 'ppt-blr-hs{setSize-3}-ns{setSize-3}'}, 
-//     {strategy: (board)=>_runPptBlrNsHs(board, 3, 2), name: 'ppt-blr-ns{setSize-3}-hs{setSize-3}'}, 
+const StrategyArray = [
+    {strategy: AnalyzerStrategies._runLastRemainingCell, name: lastRemainingCell}, 
+    {strategy: AnalyzerStrategies._runSoleCandidate, name: soleCandidate}, 
+    {strategy: AnalyzerStrategies._runUniqueCandidate, name: uniqueCandidate}, 
+    {strategy: AnalyzerStrategies._runUniqueCandidateRowCol, name: uniqueCandidateRowOrCol},
+    {strategy: AnalyzerStrategies._runPointingPairsAndTripples, name: pointingPairsAndTriples},
+    {strategy: AnalyzerStrategies._runBoxLineReduction, name: boxLineReduction}, 
+    {strategy: AnalyzerStrategies._runNakedSubset, name: nakedSubsetSetSize2}, 
+    {strategy: AnalyzerStrategies._runHiddenSubset, name: hiddenSubsetSetSize2}, 
+    {strategy: (board)=>AnalyzerStrategies._runNakedSubset(board, 3), name: nakedSubsetSetSize3}, 
+    {strategy: (board)=>AnalyzerStrategies._runHiddenSubset(board, 3), name: hiddenSubsetSetSize3}, 
+    {strategy: (board)=>AnalyzerStrategies._runNakedSubset(board, 4), name: nakedSubsetSetSize4}, 
+    {strategy: (board)=>AnalyzerStrategies._runHiddenSubset(board, 4), name: hiddenSubsetSetSize4}, 
+    {strategy: AnalyzerStrategies._runPptBlr, name: 'ppt-blr'}, 
+    {strategy: AnalyzerStrategies._runPptHs, name: 'ppt-hs{setSize-2}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrNs(board,2), name: 'ppt-blr-ns{setSize-2}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrNs(board,3), name: 'ppt-blr-ns{setSize-3}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrHs(board, 2), name: 'ppt-blr-hs{setSize-2}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrHs(board, 3), name: 'ppt-blr-hs{setSize-3}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrHsNs(board, 2, 2), name: 'ppt-blr-hs{setSize-2}-ns{setSize-2}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrNsHs(board, 2, 2), name: 'ppt-blr-ns{setSize-2}-hs{setSize-2}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrHsNs(board, 2, 3), name: 'ppt-blr-hs{setSize-2}-ns{setSize-3}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrNsHs(board, 2, 3), name: 'ppt-blr-ns{setSize-2}-hs{setSize-3}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrHsNs(board, 3, 2), name: 'ppt-blr-hs{setSize-3}-ns{setSize-2}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrNsHs(board, 3, 2), name: 'ppt-blr-ns{setSize-3}-hs{setSize-2}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrHsNs(board, 3, 3), name: 'ppt-blr-hs{setSize-3}-ns{setSize-3}'}, 
+    {strategy: (board)=>AnalyzerStrategies._runPptBlrNsHs(board, 3, 2), name: 'ppt-blr-ns{setSize-3}-hs{setSize-3}'}, 
 
-// ]
+];
 
 
 
-module.exports = {StrategyMap}; 
+module.exports = {StrategyMap, StrategyArray}; 

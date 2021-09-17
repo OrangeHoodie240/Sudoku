@@ -1,3 +1,5 @@
+const SetMethods = require('./SetMethods');
+
 
 class Cell {
     constructor(value = 0, rowI, colI) {
@@ -96,13 +98,19 @@ class Board {
      * returns a copy of the row as an array of Cell objects
      * @param {Board} board 
      * @param {Number} row 
+     * @returns {Array<Cell>}
      */
     static getRow(board, row) {
         return [...board.puzzle[row - 1]];
     }
 
-    // col number will start at 1
-    // returns a copy of the col
+    /**
+     * col number starts at 1
+     * returns copy of the col as Cell objects
+     * @param {Board} board 
+     * @param {Number} col 
+     * @returns {Array<Cell>}
+     */
     static getCol(board, col) {
         const results = [];
         for (let row of board.puzzle) {
@@ -112,9 +120,14 @@ class Board {
         return results;
     }
 
-    // box number will start at 1 and counts move left to right and then up to down
-    // returns a copy of the box
 
+    /**
+     * box number will start at one and counts left to right and up to down
+     * returns array of Cell ojects
+     * @param {Board} board 
+     * @param {Number} box 
+     * @returns {Array<Cell>}
+     */
     static getBox(board, box) {
         const results = [];
 
@@ -159,13 +172,29 @@ class Board {
         return results;
     }
 
-    /** 
-     *  takes an array of cells and returns a string representing them comma delmited
+
+    /**
+     * takes an array of cells and returns a string representing their values comma delimeted
+     * 
+     * @param {Array<Cell>} cells 
+     * @returns {String}
      */
     static convertCellsToCharacters(cells) {
         return cells.map(cell => cell.value).join(',');
     }
 
+
+    /**
+     * takes a Board and returns a string representing it
+     * by default the string is in the format required by the constructor 
+     * the optional parameter, fancy, is set to false by default, but if we pass true
+     * the returned string will have a horizontal and vertical axis describing the row 
+     * and column number, but this second format cannot be understood by the constructor
+     * 
+     * @param {Board} board 
+     * @param {Boolean} fancy 
+     * @returns {String}
+     */
     static toString(board, fancy=false) {
         let boardString = (fancy) ? ('\t1 2 3 4 5 6 7 8 9\n') : '';
         for (let i = 1; i < 10; i++) {
@@ -191,9 +220,6 @@ class Board {
     }
 
 
-   static toFancyString(board){
-       let boardString = Board.toString(board); 
-   }
 
     /**
      * returns A CLONED board with the value added to specified cell
@@ -235,7 +261,7 @@ class Board {
      * @param {Number} row starts at 1
      * @param {Number} col starts at 1
      * @param {Boolean} calculate default is false
-     * @returns 
+     * @returns {Board}
      */
     static removeValue(board, row, col, calculate = false) {
         const cell = board.puzzle[row - 1][col - 1];
@@ -247,8 +273,17 @@ class Board {
         return clonedBoard;
     }
 
-    // check if a value would be valid on a board
-    // returns boolean
+    /**
+     * takes a Board, the row and col numbers (both starting at 1), and the value we want to test 
+     * the validity of for the board and position. 
+     * Returns a Boolean describing the validity.
+     * 
+     * @param {Board} board 
+     * @param {Number} rowNum 
+     * @param {Number} colNum 
+     * @param {String} value 
+     * @returns {Boolean}
+     */
     static isValidFor(board, rowNum, colNum, value) {
         // get all related cells into the same array
         const cells = Board.getRow(board, rowNum);
@@ -300,6 +335,7 @@ class Board {
      * Nested Array: [rowNumbers, colNumbers] 
      * 
      * @param {Number} boxNum 
+     * @returns {Array<Array<Number, Number>}
      */
     static getRowAndColNums(boxNum) {
         const rows = [];
@@ -328,6 +364,12 @@ class Board {
     }
 
 
+    /**
+     * takes a Board and returns the number of missing cells 
+     * 
+     * @param {Board} board
+     * @returns {Number} 
+     */
     static countMissingCells(board) {
         board.cellsMissing = 0;
         for (let row of board.puzzle) {
@@ -436,6 +478,7 @@ class Board {
      * @param {Board} board 
      * @param {Number} rowI optional
      * @param {Number} col optional
+     * @returns {Number}
      * 
      */
     static getNextBlankCellIndicesIndex(board, rowI = null, colI = null) {
@@ -466,7 +509,7 @@ class Board {
      * 
      * 
      * @param {Board} board 
-     * @return void
+     * @return {undefined}
      */
     static calculateMissingValues(board) {
         for (let i = 0; i < 9; i++) {
@@ -592,6 +635,15 @@ class Board {
         return boxes;
     }
 
+
+    /**
+     * Determines the possibility of the two boards being different states of the same board. 
+     * A positive return does not mean that they are necessarilly different states of the same board, 
+     * but that is a possibility  
+     * @param {Board} board1 
+     * @param {Board} board2 
+     * @returns {Boolean}
+     */
     static areCompatible(board1, board2){
         for(let i = 0; i < 9; i++){
             for(let j = 0; j < 9; j++){
@@ -607,6 +659,7 @@ class Board {
     /**
      * Returns board as a 2d Array with each element a string
      * @param {Board} board 
+     * @returns {Array<Array<String>>}
      */
     static serialize(board){
         const serialized = [];
@@ -632,6 +685,35 @@ class Board {
             boardWithNewLines += row + ((i < 8) ? '\n' : '');
         }
         return new Board(boardWithNewLines);
+    }
+
+    /**
+     * Takes two calculated boards and compares the possible value sets of each cooresponding element between them
+     * If they are fully identical in terms of the possible value sets of each cell, {identical: true} will be returned. 
+     * If there is one or more differences {identical: false, differences} will be returned where differences is an array
+     * of messages describing each difference. 
+     * 
+     * @param {Board} boardA 
+     * @param {Board} boardB 
+     * @returns {{identical: Boolean, differences: Array<String>}}
+     */
+    static comparePossibleValueSets(boardA, boardB) {
+        let differences = [];
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                let possibilitiesA = boardA.puzzle[i][j].possibleValues;
+                let possibilitiesB = boardB.puzzle[i][j].possibleValues;
+                if (!SetMethods.areEqual(possibilitiesA, possibilitiesB)) {
+                    differences.push(possibilitiesA, ' at ' + i + ',' + j + ' does not equal ', possibilitiesB);
+                }
+            }
+        }
+        if(differences.length === 0){
+            return {identical: true};
+        }
+        else{
+            return {identical: false, differences};
+        }
     }
 
 }

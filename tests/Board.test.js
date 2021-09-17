@@ -315,4 +315,5 @@ const boardString2 =
         Board.getBoxCol
         Board.isCompatible
         Board.serialize
+        Board.comparePossibleValueSets
 */
