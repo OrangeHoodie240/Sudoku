@@ -1,5 +1,6 @@
 const Strategy = require('./Strategy');
 const { Board } = require('./Board');
+const getFirstEmptyCellIndicesOrOrigin = Board.getFirstEmptyCellIndicesOrOrigin; 
 
 class AnalyzerStrategies {
     static _runLastRemainingCell(board) {
@@ -38,15 +39,13 @@ class AnalyzerStrategies {
 
     static _runPptHs(board, setSize = 2) {
         let results = Strategy._pointingPairsAndTripples(board);
-        const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-        const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+        const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
         results = Strategy._hiddenSubset(results.board, rowI, colI, setSize, 'all', false);
         return results;
     }
 
     static _runHiddenSubset(board, setSize = 2) {
-        const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-        const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+        const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
         let results = Strategy._hiddenSubset(board, rowI, colI, setSize, 'all', true);
         return results;
     }
@@ -60,8 +59,7 @@ class AnalyzerStrategies {
     }
 
     static _runNakedSubset(board, setSize = 2) {
-        const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-        const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+        const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
         let results = Strategy.applyStrategy(board, 'naked-subset', {
             rowI,
             colI,
@@ -93,8 +91,7 @@ class AnalyzerStrategies {
     }
 
     static _runPptBlrNs(board, setSize = 2) {
-        const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-        const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+        const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
         let results = Strategy._pointingPairsAndTripples(board, false);
         results = Strategy._BoxLineReduction(results.board, false, false);
         results = Strategy.applyStrategy(results.board, 'naked-subset', {
@@ -110,8 +107,7 @@ class AnalyzerStrategies {
     }
 
     static _runPptBlrHsNs(board, hsSetSize = 2, nsSetSize = 2) {
-        const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-        const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+        const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
         let results = Strategy._pointingPairsAndTripples(board, false);
         results = Strategy._BoxLineReduction(results.board, false, false);
         results = Strategy._hiddenSubset(results.board, rowI, colI, hsSetSize, 'all', false, true);
@@ -129,8 +125,7 @@ class AnalyzerStrategies {
 
 
     static _runPptBlrHs(board, setSize = 2) {
-        const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-        const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+        const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
         let results = Strategy._pointingPairsAndTripples(board, false);
         results = Strategy._BoxLineReduction(results.board, false, false);
         results = Strategy._hiddenSubset(results.board, rowI, colI, setSize, 'all', false);
@@ -138,9 +133,7 @@ class AnalyzerStrategies {
     }
 
     static _runPptBlrNsHs(board, nsSetSize = 2, hsSetSize = 2) {
-        const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-        const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
-
+        const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
         board = new Board(Board.toString(board), { calculate: true });
         let results = Strategy._pointingPairsAndTripples(board, false);
         results = Strategy._BoxLineReduction(results.board, false, false);

@@ -340,7 +340,7 @@ describe('test _boxLineReduction', () => {
         let board = new Board(boardString1, { calculate: true });
         board.puzzle[0][0].possibleValues.delete('2');
 
-        let results = Strategy._BoxLineReduction(board);
+        let results = Strategy._BoxLineReduction(board, false);
         board = Strategy._updatePossibleValueRemoval(board).board;
 
         expect(board.puzzle[1][4].possibleValues)
@@ -372,4 +372,4 @@ describe('test _lastCellRemaining', () => {
         expect(board.puzzle[7][1].value)
             .toEqual('8');
     });
-})
+});

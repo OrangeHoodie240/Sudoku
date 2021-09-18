@@ -716,6 +716,17 @@ class Board {
         }
     }
 
+    /**
+     * Takes a board and returns the row index and column index of the first occuring empty space.
+     * If there are no empty cells it returns the origin position
+     * @param {Board} board 
+     * @returns {Array<Number, Number>}
+     */
+    static getFirstEmptyCellIndicesOrOrigin(board){
+        const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
+        const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+        return {rowI, colI};
+    }
 }
 
 module.exports = { Board, Cell };

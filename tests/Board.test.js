@@ -316,4 +316,5 @@ const boardString2 =
         Board.isCompatible
         Board.serialize
         Board.comparePossibleValueSets
+        getFirstEmptyCellIndicesOrOrigin
 */

@@ -1,6 +1,6 @@
 const Strategy = require('./Strategy');
-const { Board } = require('./Board');
-const Analyzer = require('./Analyzer');
+const {Board} = require('./Board.js');
+const getFirstEmptyCellIndicesOrOrigin = Board.getFirstEmptyCellIndicesOrOrigin; 
 
 // each strategy should take the board and return either false for unsuccefully
 // attempting ot solve a single cell or AN OBJECT with the board property for the 
@@ -11,8 +11,7 @@ const difficultySettings = {
         strategies: [
 
             function (board) {
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 return Strategy.applyStrategy(board, 'sole-candidate',
                     {
                         rowI,
@@ -21,8 +20,7 @@ const difficultySettings = {
             },
 
             function (board) {
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 return Strategy.applyStrategy(board, 'unique-candidate',
                     {
                         rowI,
@@ -48,8 +46,7 @@ const difficultySettings = {
         strategies: [
 
             function (board) {
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 return Strategy.applyStrategy(board, 'sole-candidate',
                     {
                         rowI,
@@ -58,8 +55,7 @@ const difficultySettings = {
             },
 
             function (board) {
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 return Strategy.applyStrategy(board, 'unique-candidate',
                     {
                         rowI,
@@ -95,8 +91,7 @@ const difficultySettings = {
         strategies: [
 
             function (board) {
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 return Strategy.applyStrategy(board, 'sole-candidate',
                     {
                         rowI,
@@ -105,8 +100,7 @@ const difficultySettings = {
             },
 
             function (board) {
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 return Strategy.applyStrategy(board, 'unique-candidate',
                     {
                         rowI,
@@ -133,8 +127,7 @@ const difficultySettings = {
             }, 
             function (board) {
                 let results = Strategy._pointingPairsAndTripples(board, false);
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 return Strategy.applyStrategy(results.board, 'naked-subset',
                     {
                         rowI,
@@ -153,8 +146,7 @@ const difficultySettings = {
         strategies: [
 
             function (board) {
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 return Strategy.applyStrategy(board, 'sole-candidate',
                     {
                         rowI,
@@ -163,8 +155,7 @@ const difficultySettings = {
             },
 
             function (board) {
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 return Strategy.applyStrategy(board, 'unique-candidate',
                     {
                         rowI,
@@ -209,8 +200,7 @@ const difficultySettings = {
         strategies: [
 
             function (board) {
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 return Strategy.applyStrategy(board, 'sole-candidate',
                     {
                         rowI,
@@ -219,8 +209,7 @@ const difficultySettings = {
             },
 
             function (board) {
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 return Strategy.applyStrategy(board, 'unique-candidate',
                     {
                         rowI,
@@ -247,8 +236,7 @@ const difficultySettings = {
             }, 
             function (board) {
                 let results = Strategy._pointingPairsAndTripples(board, false);
-                const rowI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][0] : 0;
-                const colI = (board.blankCellsIndices[0]) ? board.blankCellsIndices[0][1] : 0;
+                const {rowI, colI} = getFirstEmptyCellIndicesOrOrigin(board);
                 results = Strategy._hiddenSubset(results.board, rowI, colI, 2, 'all');
                 return results;
             }

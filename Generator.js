@@ -1,4 +1,3 @@
-const Strategy = require('./Strategy');
 const difficultySettings = require('./difficultySettings');
 const solve = require('./solve');
 const { Board } = require('./Board');
@@ -19,6 +18,11 @@ const blankSudokuString =
 
 
 class Generator {
+
+    /**
+     * creates and returns a randomized full sudoku board
+     * @returns {Board}
+     */
     static _generateFullBoard() {
         while (true) {
             let time = Date.now();
@@ -65,6 +69,12 @@ class Generator {
         }
     }
 
+
+    /**
+     * Takes a board and returns an array of all the filled cells on the board with their order shuffled
+     * @param {Board} board 
+     * @returns {Array<Cell>}
+     */
     static _getFilledCellsShuffled(board) {
         const filledCells = [];
         for (let i = 0; i < 9; i++) {
@@ -84,6 +94,16 @@ class Generator {
         return filledCells;
     }
 
+
+    /**
+     * applies difficulty setting to the board and returns an object describing whether or not the board passed the difficulty 
+     * settings and how close it got
+     * 
+     * @param {Board} board 
+     * @param {object} difficultySetting 
+     * @param {Date} time 
+     * @returns {{boardSolved: Boolean, difficultyMet: Boolean, strategiesRequired: Number, solvedBoard: Board, strategiesUsed: Number}}
+     */
     static _applyDifficultySetting(board, difficultySetting, time) {
         const strategyNames = new Set(difficultySetting.strategyNames);
         const strategiesLength = difficultySetting.strategies.length;
